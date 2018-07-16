@@ -1,0 +1,8 @@
+foo = what the {0}
+
+site.error-summary = There is a problem
+site.back = Back
+site.continue = Continue
+
+questionPage.heading = What is your home postcode?
+questionPage.required = Enter your home postcode

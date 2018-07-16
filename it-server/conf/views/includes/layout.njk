@@ -1,0 +1,21 @@
+{% extends "govuk-frontend/template.njk" %}
+
+{% block head %}
+  {% include "includes/head.html" %}
+{% endblock %}
+
+{% block header %}
+  {{ govukHeader({
+    homepageUrl: "/",
+    serviceName: "Test",
+    serviceUrl: "/",
+    containerClasses: "govuk-width-container",
+    assetsPath: "/public"
+  }) }}
+{% endblock %}
+
+{% block bodyEnd %}
+  {% block scripts %}
+    {% include "includes/scripts.html" %}
+  {% endblock %}
+{% endblock %}
