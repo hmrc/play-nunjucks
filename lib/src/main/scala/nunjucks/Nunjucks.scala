@@ -4,6 +4,7 @@ import java.nio.file.Files
 
 import better.files.{File => SFile, _}
 import com.eclipsesource.v8._
+import nunjucks.s2v8.SNodeJS
 import play.api.Environment
 import play.api.i18n.Messages
 import play.api.libs.json.{JsValue, Json}
@@ -14,12 +15,14 @@ class Nunjucks(
                 context: NunjucksContext
               ) {
 
+  private val nodeJS = SNodeJS.create()
   private val nodeJs = NodeJS.createNodeJS()
   private val runtime = nodeJs.getRuntime
 
   private val instance = {
 
     val nunjucks = nodeJs.require((context.nodeModulesDirectory / "nunjucks").toJava)
+//    val nunjucks = nodeJS.require(context.nodeModulesDirectory / "nunjucks")
 
     val env = {
 
@@ -37,6 +40,11 @@ class Nunjucks(
         new V8Array(runtime).push(params)
       }
 
+//      nunjucks.executeObjectFn(
+//        "configure",
+//        environment.resource("views").get.getFile,
+//        context.libDirectory.pathAsString
+//      )
       val result = nunjucks.executeObjectFunction("configure", params)
       params.release()
       result
