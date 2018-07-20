@@ -4,6 +4,7 @@ import java.nio.file.{Files, Paths}
 
 import better.files._
 import com.google.inject.{Inject, Singleton}
+import org.webjars.WebJarExtractor
 import play.api.{Configuration, Environment, Logger, Mode}
 
 import scala.collection.JavaConverters._
@@ -87,36 +88,18 @@ class DefaultNunjucksContext @Inject() (
 
   override val libs: List[File] = {
 
+    val extractor = new WebJarExtractor(environment.classLoader)
+
     configuration
       .getStringList("nunjucks.libs")
       .map {
-        a =>
-        a.asScala.map {
+        _.asScala.map {
           lib =>
 
-            val jar = {
-              val fullPath = environment.resource(s"META-INF/resources/webjars/$lib").get.getPath
-              (fullPath.substring(5, fullPath.indexOf(".jar")) + ".jar").toFile
-            }
-
             val tmp = workingDirectory / "tmp" / lib
-            val resourceDir = tmp / "META-INF" / "resources" / "webjars" / lib
             val libDir = libDirectory / lib
 
-            logger.info(s"unzipping $jar to $tmp")
-            jar.unzipTo(tmp)
-
-            logger.info(s"copying resources from $tmp to $libDir")
-            resourceDir.glob("**/*.njk").foreach {
-              file =>
-                val path = resourceDir
-                  .glob("*").toList.head
-                  .relativize(file).toString
-                val newFile = libDir / path
-                logger.debug(s"copying $file to $newFile")
-                newFile.createIfNotExists(createParents = true)
-                file.copyTo(newFile, overwrite = true)
-            }
+            extractor.extractAllWebJarsTo(libDirectory.toJava)
 
             libDir
         }.toList

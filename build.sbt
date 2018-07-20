@@ -13,6 +13,7 @@ lazy val libSettings = Seq(
   version := "0.1.0-SNAPSHOT",
   libraryDependencies ++= Seq(
     "com.typesafe.play" %% "play" % PlayVersion.current % "test, provided",
+    "org.webjars" % "webjars-locator-core" % "0.35",
     "com.github.pathikrit" %% "better-files" % "3.5.0"
   ),
   resourceGenerators in Compile += Def.task {
@@ -68,16 +69,45 @@ lazy val lib = {
 }
 
 lazy val itServer = (project in file("it-server"))
-  .enablePlugins(PlayScala, SbtWeb)
+  .enablePlugins(PlayScala, SbtWeb, SbtJsEngine)
   .dependsOn(lib)
   .settings(commonSettings)
   .settings(
     name := "it-server",
     libraryDependencies ++= Seq(
-      "org.webjars.npm" % "govuk-frontend" % "1.0.0"
+//      "org.webjars.npm" % "govuk-frontend" % "1.0.0"
     ),
     Concat.groups := Seq(
       "javascripts/application.js" -> group(Seq("lib/govuk-frontend/all.js"))
     ),
-    pipelineStages in Assets := Seq(concat, uglify)
+    pipelineStages in Assets := Seq(concat, uglify),
+    WebKeys.webModuleGenerators in Assets += Def.task {
+
+      val nodeModules = baseDirectory.value / "node_modules"
+      val libs = (nodeModules ** "*" --- nodeModules) pair relativeTo(nodeModules)
+
+      val mappings = libs.map {
+        case (file, path) =>
+          file -> (WebKeys.webJarsDirectory in Assets).value / "lib" / path
+      }
+
+      IO.copy(mappings)
+      mappings.map(_._2)
+    }.dependsOn(JsEngineKeys.npmNodeModules in Assets).taskValue,
+    managedClasspath in Runtime += Def.task {
+
+      val nodeModules = baseDirectory.value / "node_modules"
+      val libs = (nodeModules ** "*" --- nodeModules) pair relativeTo(nodeModules)
+
+      val Pattern = """^([^/]+)/(.*)$""".r
+      val mappings = libs.filter(_._2.matches(Pattern.toString)).map {
+        case (file, Pattern(lib, path)) =>
+          file -> s"META-INF/resources/webjars/$lib/999-SNAPSHOT/$path"
+      }
+
+      val webJars = (resourceManaged in Compile).value / "webjars.jar"
+      IO.zip(mappings, webJars)
+
+      webJars
+    }.dependsOn(JsEngineKeys.npmNodeModules in Assets).value
   )
