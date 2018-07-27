@@ -6,3 +6,7 @@ site.continue = Continue
 
 questionPage.heading = What is your home postcode?
 questionPage.required = Enter your home postcode
+
+# Test messages
+test.foo = foobar
+test.hello = Hello, {0}!

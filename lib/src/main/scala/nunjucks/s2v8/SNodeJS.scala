@@ -36,18 +36,6 @@ class SNodeJS(nodeJS: NodeJS) {
     }, name)
   }
 
-  def registerStringFn[A : Reads](name: String, fn: (A, Seq[AnyRef]) => String): Unit = {
-    runtime.registerJavaMethod(new JavaCallback {
-      override def invoke(receiver: V8Object, parameters: V8Array): AnyRef = {
-
-        val a = parameters.getObject(0).toJson().as[A]
-        val rest = (1 until parameters.length).map(parameters.get)
-
-        fn()
-      }
-    }, name)
-  }
-
   def executeStringFn(name: String, args: JsValueWrapper*): String = {
     val v8Args = args.toJsArray.sv8Arr.delegate
     val result = runtime.executeStringFunction(name, v8Args)
@@ -67,6 +55,10 @@ class SNodeJS(nodeJS: NodeJS) {
     val result = runtime.executeObjectFunction(name, v8Args)
     v8Args.release()
     result.toJson()
+  }
+
+  def handleMessage(): Unit = {
+    nodeJS.handleMessage()
   }
 }
 

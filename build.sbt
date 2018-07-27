@@ -3,6 +3,12 @@ import play.core.PlayVersion
 
 lazy val j2v8Version = "4.6.0"
 
+lazy val root = (project in file("."))
+  .aggregate(lib, itServer)
+  .settings(
+    parallelExecution in Test := false
+  )
+
 lazy val commonSettings = Seq(
   organization := "uk.gov.hmrc",
   scalaVersion := "2.11.12"
@@ -82,7 +88,9 @@ lazy val itServer = (project in file("it-server"))
       "org.webjars.npm" % "govuk-frontend" % "1.0.0",
       "org.scalactic" %% "scalactic" % "3.0.5" % "test",
       "org.scalatest" %% "scalatest" % "3.0.5" % "test",
-      "org.scalacheck" %% "scalacheck" % "1.14.0" % "test"
+      "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
+      "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1" % "test",
+      "io.gatling.highcharts" % "gatling-charts-highcharts" % "2.3.1" % "test"
     ),
     Concat.groups := Seq(
       "javascripts/application.js" -> group(Seq("lib/govuk-frontend/all.js"))

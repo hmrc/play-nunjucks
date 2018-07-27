@@ -5,12 +5,14 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import org.scalatest.{FreeSpec, MustMatchers}
+import org.scalatest.{FreeSpec, MustMatchers, TryValues}
 import play.api.libs.json._
 
 import scala.language.postfixOps
+import scala.concurrent.ExecutionContext.Implicits.global
 
-class SV8ObjectSpec extends FreeSpec with MustMatchers with GeneratorDrivenPropertyChecks with JsonGenerators with MockFactory {
+class SV8ObjectSpec extends FreeSpec with MustMatchers with GeneratorDrivenPropertyChecks
+  with JsonGenerators with MockFactory with TryValues {
 
   val genNonEmptyString: Gen[String] = {
     for {
@@ -59,7 +61,7 @@ class SV8ObjectSpec extends FreeSpec with MustMatchers with GeneratorDrivenPrope
                  |(function() {
                  |  return {
                  |    "$fieldName": $fnName
-                 |  }
+                 |  };
                  |})();
                """.stripMargin
             )
@@ -127,7 +129,7 @@ class SV8ObjectSpec extends FreeSpec with MustMatchers with GeneratorDrivenPrope
                  |(function() {
                  |  return {
                  |    "$fieldName": $fnName
-                 |  }
+                 |  };
                  |})();
                """.stripMargin
             )
@@ -137,6 +139,91 @@ class SV8ObjectSpec extends FreeSpec with MustMatchers with GeneratorDrivenPrope
 
             obj.release()
             nodeJS.release()
+        }
+      }
+    }
+
+    ".executeStringFnViaCallback" - {
+
+      "must call the function with the given parameters and return a string" in {
+
+        forAll(genNonEmptyString, arbitrary[JsArray], arbitrary[String]) {
+          (fieldName, args, string) =>
+
+            implicit val nodeJS: SNodeJS = SNodeJS.create()
+            val runtime: V8 = nodeJS.runtime
+
+            val obj = runtime.executeObjectScript(
+              s"""
+                 |(function() {
+                 |  return {
+                 |    "$fieldName": function() {
+                 |      arguments[arguments.length - 1](null, "$string");
+                 |    }
+                 |  };
+                 |})();
+               """.stripMargin
+            )
+
+            val result = obj.executeStringFnViaCallback(fieldName, args.value.map(JsValueWrapper): _*)
+            result.get mustEqual string
+
+            obj.release()
+            nodeJS.release()
+        }
+      }
+
+      "must call the function with the given parameters and return an error" - {
+
+        "when the callback is called with an error object" in {
+
+          forAll(genNonEmptyString, arbitrary[JsArray], arbitrary[String]) {
+            (fieldName, args, errorMessage) =>
+
+              implicit val nodeJS: SNodeJS = SNodeJS.create()
+              val runtime: V8 = nodeJS.runtime
+
+              val obj = runtime.executeObjectScript(
+                s"""
+                   |(function() {
+                   |  return {
+                   |    "$fieldName": function() {
+                   |      arguments[arguments.length - 1](new Error("$errorMessage"));
+                   |    }
+                   |  };
+                   |})();
+               """.stripMargin
+              )
+
+              val result = obj.executeStringFnViaCallback(fieldName, args.value.map(JsValueWrapper): _*)
+              result.failed.get.getMessage mustEqual s"""{"message":"$errorMessage"}"""
+
+              obj.release()
+              nodeJS.release()
+          }
+        }
+
+        "when the callback takes too long to be called" in {
+
+          forAll(genNonEmptyString, arbitrary[JsArray], minSuccessful(1)) {
+            (fieldName, args) =>
+
+              implicit val nodeJS: SNodeJS = SNodeJS.create()
+              val runtime: V8 = nodeJS.runtime
+
+              val obj = runtime.executeObjectScript(
+                s"""
+                   |(function() {
+                   |  return {
+                   |    "$fieldName": function() {}
+                   |  };
+                   |})();
+                 """.stripMargin
+              )
+
+              val result = obj.executeStringFnViaCallback(fieldName, args.value.map(JsValueWrapper): _*)
+              result.failed.get.getMessage must startWith("Timeout out after")
+          }
         }
       }
     }

@@ -1,9 +1,18 @@
 package nunjucks.s2v8
 
-import com.eclipsesource.v8.{V8, V8Object, V8Value}
+import java.util.concurrent.atomic.AtomicReference
+
+import com.eclipsesource.v8._
+import play.api.Logger
 import play.api.libs.json._
 
+import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, Future, TimeoutException}
+import scala.util.{Failure, Success, Try}
+
 class SV8Object(private[nunjucks] val delegate: V8Object) {
+
+  private val logger = Logger(this.getClass)
 
   private implicit val runtime: V8 = delegate.getRuntime
 
@@ -56,6 +65,53 @@ class SV8Object(private[nunjucks] val delegate: V8Object) {
     val params = json.toJsArray.sv8Arr.delegate
     delegate.executeVoidFunction(name, params)
     params.release()
+  }
+
+  def executeStringFnViaCallback(name: String, args: JsValueWrapper*)
+                                (implicit nodeJS: SNodeJS,
+                                 ec: ExecutionContext,
+                                 timeout: FiniteDuration = 1.second
+                                ): Try[String] = {
+
+    val result = new AtomicReference[Try[String]]
+
+    val callback = new V8Function(runtime, new JavaCallback {
+      override def invoke(receiver: V8Object, parameters: V8Array): AnyRef = {
+
+        val error = parameters.getObject(0)
+
+        if (error != null) {
+          result.set(Failure(JavascriptError(error)))
+        } else {
+          val string = parameters.getString(1)
+          result.set(Success(string))
+        }
+
+        null
+      }
+    })
+
+    val params = args.toJsArray.sv8Arr.delegate
+      .push(callback.delegate)
+
+    delegate.executeVoidFunction(name, params)
+
+    val timeoutPromise = Future {
+      Thread.sleep(timeout.toMillis)
+      result.compareAndSet(null, Failure(new TimeoutException(s"Timeout out after ${timeout.toString}")))
+    }
+
+    while (result.get == null) {
+      logger.trace("running node event loop")
+      nodeJS.handleMessage()
+    }
+
+    Future.firstCompletedOf(Seq(timeoutPromise, Future.successful({})))
+
+    params.release()
+    callback.release()
+
+    result.get
   }
 
   def release(): Unit = {
