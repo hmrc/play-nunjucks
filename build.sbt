@@ -79,7 +79,7 @@ lazy val lib = {
 }
 
 lazy val itServer = (project in file("it-server"))
-  .enablePlugins(PlayScala, SbtWeb)
+  .enablePlugins(PlayScala, SbtWeb, GatlingPlugin)
   .dependsOn(lib)
   .settings(commonSettings)
   .settings(
@@ -90,11 +90,13 @@ lazy val itServer = (project in file("it-server"))
       "org.scalatest" %% "scalatest" % "3.0.5" % "test",
       "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
       "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1" % "test",
-      "io.gatling.highcharts" % "gatling-charts-highcharts" % "2.3.1" % "test"
+      "io.gatling.highcharts" % "gatling-charts-highcharts" % "2.1.0" % "test",
+      "io.gatling"            % "gatling-test-framework"    % "2.1.0" % "test"
     ),
     Concat.groups := Seq(
       "javascripts/application.js" -> group(Seq("lib/govuk-frontend/all.js"))
     ),
+    scalaSource in Gatling := (scalaSource in Test).value / "gatling",
     pipelineStages in Assets := Seq(concat, uglify),
     WebKeys.webModuleGenerators in Assets += Def.task {
 

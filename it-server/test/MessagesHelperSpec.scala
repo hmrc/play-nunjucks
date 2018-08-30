@@ -13,6 +13,7 @@ class MessagesHelperSpec extends FreeSpec with MustMatchers with GuiceOneAppPerS
     Environment.simple(), Configuration(
       "nunjucks.devDirectory"     -> "nunjucks",
       "nunjucks.libDirectoryName" -> "libs",
+      "nunjucks.timeout"          -> 2000,
       "nunjucks.viewPaths"        -> Seq("test/views")
     )
   )

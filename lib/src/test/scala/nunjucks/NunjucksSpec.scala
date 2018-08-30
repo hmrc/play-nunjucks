@@ -13,6 +13,7 @@ class NunjucksSpec extends FreeSpec with MustMatchers {
     Environment.simple(), Configuration(
       "nunjucks.devDirectory"     -> "nunjucks",
       "nunjucks.libDirectoryName" -> "libs",
+      "nunjucks.timeout"          -> 2000,
       "nunjucks.viewPaths"        -> Seq("views")
     )
   )

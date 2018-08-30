@@ -8,4 +8,6 @@ class TestController @Inject() extends Controller {
   def routeWithArgs(string: String, int: Int) = Action {
     Ok
   }
+
+  def ok = Action { Ok }
 }
