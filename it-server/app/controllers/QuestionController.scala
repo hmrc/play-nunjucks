@@ -7,7 +7,7 @@ import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, Controller}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 
 @Singleton
@@ -20,19 +20,19 @@ class QuestionController @Inject() (
     "value" -> Forms.text.verifying("questionPage.required", _.nonEmpty)
   )
 
-  def get: Action[AnyContent] = Action.async {
+  def get: Action[AnyContent] = Action {
     implicit request =>
       val form2 = request.session.get("postcode").map(form.fill).getOrElse(form)
-      renderer.render("question.njk", Json.obj("form" -> form)).map(Ok(_))
+      Ok(renderer.render("question.njk", Json.obj("form" -> form2)))
   }
 
-  def post: Action[AnyContent] = Action.async {
+  def post: Action[AnyContent] = Action {
     implicit request =>
       form.bindFromRequest().fold(
         errors =>
-          renderer.render("question.njk", Json.obj("form" -> errors)).map(BadRequest(_)),
+          BadRequest(renderer.render("question.njk", Json.obj("form" -> errors))),
         postcode =>
-          Future.successful(Redirect(controllers.routes.QuestionController.get).addingToSession("postcode" -> postcode))
+          Redirect(controllers.routes.QuestionController.get).addingToSession("postcode" -> postcode)
       )
   }
 }

@@ -1,5 +1,6 @@
 package nunjucks
 
+import java.net.URL
 import java.nio.file.{Files, Paths}
 
 import better.files._
@@ -8,6 +9,7 @@ import org.webjars.WebJarExtractor
 import play.api.{Configuration, Environment, Logger, Mode}
 
 import scala.collection.JavaConverters._
+import scala.concurrent.duration._
 
 @Singleton
 class DefaultNunjucksContext @Inject() (
@@ -16,6 +18,9 @@ class DefaultNunjucksContext @Inject() (
                                        ) extends NunjucksContext {
 
   private val logger = Logger(this.getClass)
+
+  override lazy val timeout: FiniteDuration =
+    configuration.underlying.getInt("nunjucks.timeout").millis
 
   override lazy val libDirectory: File = {
     workingDirectory / configuration.underlying.getString("nunjucks.libDirectoryName")
@@ -77,11 +82,15 @@ class DefaultNunjucksContext @Inject() (
     }.createIfNotExists(asDirectory = true, createParents = true)
   }
 
-  override lazy val viewsDirectories: List[String] = {
+  override lazy val viewsDirectories: List[File] = {
 
     configuration
       .getStringList("nunjucks.viewPaths")
-      .map(_.asScala.toList)
+      .map {
+        _.asScala.toList
+          .flatMap(environment.resource)
+          .map(toAbsoluteFile)
+      }
       .getOrElse(List.empty)
       .ensuring(_.nonEmpty, "At least one view directory must be set at `nunjucks.viewPaths`")
   }
@@ -96,7 +105,6 @@ class DefaultNunjucksContext @Inject() (
         _.asScala.map {
           lib =>
 
-            val tmp = workingDirectory / "tmp" / lib
             val libDir = libDirectory / lib
 
             extractor.extractAllWebJarsTo(libDirectory.toJava)
@@ -105,6 +113,9 @@ class DefaultNunjucksContext @Inject() (
         }.toList
       }.getOrElse(List.empty)
   }
+
+  private def toAbsoluteFile(url: URL): File =
+    toAbsoluteFile(url.getFile)
 
   private def toAbsoluteFile(path: String): File = {
     if (Paths.get(path).isAbsolute) {
@@ -125,7 +136,7 @@ trait NunjucksContext {
 
   def workingDirectory: File
 
-  def viewsDirectories: List[String]
+  def viewsDirectories: List[File]
 
   def libDirectory: File
 
@@ -133,4 +144,6 @@ trait NunjucksContext {
 
   def nodeModulesDirectory: File =
     workingDirectory / "node_modules"
+
+  def timeout: FiniteDuration
 }

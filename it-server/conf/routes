@@ -1,4 +1,8 @@
-GET        /public/*file        controllers.Assets.versioned(path = "/public", file)
+GET        /public/*file                      controllers.Assets.versioned(path = "/public", file)
 
-GET        /                    controllers.QuestionController.get
-POST       /                    controllers.QuestionController.post
+GET        /                                  controllers.QuestionController.get
+POST       /                                  controllers.QuestionController.post
+
+# Test routes
+GET        /route-with-args/:string/:int      controllers.TestController.routeWithArgs(string: String, int: Int)
+GET        /ok                                controllers.TestController.ok

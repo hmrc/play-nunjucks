@@ -3,6 +3,12 @@ import play.core.PlayVersion
 
 lazy val j2v8Version = "4.6.0"
 
+lazy val root = (project in file("."))
+  .aggregate(lib, itServer)
+  .settings(
+    parallelExecution in Test := false
+  )
+
 lazy val commonSettings = Seq(
   organization := "uk.gov.hmrc",
   scalaVersion := "2.11.12"
@@ -13,8 +19,12 @@ lazy val libSettings = Seq(
   version := "0.1.0-SNAPSHOT",
   libraryDependencies ++= Seq(
     "com.typesafe.play" %% "play" % PlayVersion.current % "test, provided",
-    "org.webjars" % "webjars-locator-core" % "0.35",
-    "com.github.pathikrit" %% "better-files" % "3.5.0"
+    "com.github.pathikrit" %% "better-files" % "3.5.0",
+    "org.scalactic" %% "scalactic" % "3.0.5" % "test",
+    "org.scalatest" %% "scalatest" % "3.0.5" % "test",
+    "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
+    "org.scalamock" %% "scalamock" % "4.1.0" % "test",
+    "org.webjars" % "webjars-locator-core" % "0.35"
   ),
   resourceGenerators in Compile += Def.task {
     val nodeModules = (JsEngineKeys.npmNodeModules in Assets).value
@@ -69,17 +79,24 @@ lazy val lib = {
 }
 
 lazy val itServer = (project in file("it-server"))
-  .enablePlugins(PlayScala, SbtWeb, SbtJsEngine)
+  .enablePlugins(PlayScala, SbtWeb, GatlingPlugin)
   .dependsOn(lib)
   .settings(commonSettings)
   .settings(
     name := "it-server",
     libraryDependencies ++= Seq(
-//      "org.webjars.npm" % "govuk-frontend" % "1.0.0"
+      "org.webjars.npm" % "govuk-frontend" % "1.0.0",
+      "org.scalactic" %% "scalactic" % "3.0.5" % "test",
+      "org.scalatest" %% "scalatest" % "3.0.5" % "test",
+      "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
+      "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1" % "test",
+      "io.gatling.highcharts" % "gatling-charts-highcharts" % "2.1.0" % "test",
+      "io.gatling"            % "gatling-test-framework"    % "2.1.0" % "test"
     ),
     Concat.groups := Seq(
       "javascripts/application.js" -> group(Seq("lib/govuk-frontend/all.js"))
     ),
+    scalaSource in Gatling := (scalaSource in Test).value / "gatling",
     pipelineStages in Assets := Seq(concat, uglify),
     WebKeys.webModuleGenerators in Assets += Def.task {
 

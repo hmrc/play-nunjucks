@@ -1,132 +1,129 @@
 package nunjucks
 
-import java.nio.file.Files
-
-import better.files.{File => SFile, _}
 import com.eclipsesource.v8._
-import play.api.Environment
+import nunjucks.s2v8.{SNodeJS, SV8Object}
 import play.api.i18n.Messages
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json._
 import play.api.mvc.Call
 
-class Nunjucks(
-                environment: Environment,
-                context: NunjucksContext
-              ) {
+import scala.concurrent.ExecutionContext
+import scala.concurrent.duration._
+import scala.util.Try
+import scala.util.control.NonFatal
 
-  private val nodeJs = NodeJS.createNodeJS()
-  private val runtime = nodeJs.getRuntime
+class Nunjucks private(
+                        delegate: V8Object,
+                        njkContext: NunjucksContext
+                      )(implicit nodeJS: SNodeJS) extends SV8Object(delegate) {
 
-  private val instance = {
+  import s2v8._
 
-    val nunjucks = nodeJs.require((context.nodeModulesDirectory / "nunjucks").toJava)
+  private implicit val timeout: FiniteDuration = 100.millis
 
-    val env = {
+  private def registerRoutesHelper(): Unit = {
 
-      val params = {
+    val fn = new V8Function(delegate.getRuntime, new JavaCallback {
+      override def invoke(receiver: V8Object, parameters: V8Array): AnyRef = {
 
-        val params = new V8Array(runtime)
-          .push(environment.resource("views").get.getFile)
-          .push(context.libDirectory.pathAsString)
+        val routeString = parameters.getString(0)
 
-        context.viewsDirectories.foreach {
-          dir =>
-            params.push(environment.resource(dir).get.getFile)
+        val args = (1 until parameters.length)
+          .map(parameters.get)
+          .flatMap(Option(_))
+          .toList
+
+        try {
+
+          val pieces = routeString.split("\\.")
+
+          val `package` = pieces
+            .dropRight(2)
+            .mkString(".")
+
+          val `class` = pieces.init.last
+          val route   = pieces.last
+          val field   = Class.forName(`package`).getField(`class`)
+          val method  = field.getType.getMethods.find(_.getName == route).get
+
+          method.invoke(field.get(null), args: _*).asInstanceOf[Call].url
+        } catch {
+          case NonFatal(e) =>
+            throw RouteHelperError(routeString, args, e)
         }
-
-        new V8Array(runtime).push(params)
       }
+    })
 
-      val result = nunjucks.executeObjectFunction("configure", params)
-      params.release()
-      result
-    }
+    addGlobal("route", fn)
+  }
 
-    runtime.registerJavaMethod(new JavaCallback {
+  private def registerMessagesHelper(messages: Messages): Unit = {
+
+    val fn = new V8Function(delegate.getRuntime, new JavaCallback {
       override def invoke(receiver: V8Object, parameters: V8Array): AnyRef = {
 
-        val (router :: route :: params) = (0 until parameters.length).map(parameters.get).toList
+        val key = parameters.getString(0)
 
-        val routerPieces =
-          router
-            .asInstanceOf[String]
-            .split("\\.")
+        val args = (1 until parameters.length)
+            .map(parameters.get)
+            .flatMap(Option(_))
+            .toList
 
-        val routerPackage =
-          routerPieces.init.mkString(".")
-
-        val routerClass =
-          routerPieces.last
-
-        val field = Class.forName(routerPackage).getField(routerClass)
-        val method = field.getType.getMethods.find(_.getName == route).get
-
-        // TODO: release native resources!!
-        method.invoke(field.get(null), params: _*).asInstanceOf[Call].url
+        messages(key, args: _*)
       }
-    }, "route")
+    })
 
-    Nunjucks.addGlobal(env, "route", runtime.getObject("route"))
-
-    env
+    addGlobal("messages", fn)
   }
 
-  def render(view: String, params: JsValue, messages: Messages): String = {
+  private def addGlobal(key: String, value: V8Value): Unit = {
 
-    setMessages(messages)
+    val params = new V8Array(nodeJS.runtime)
+        .push(key)
+        .push(value)
 
-    val paramsObject =
-      runtime.executeObjectScript(s"(function () { return ${Json.stringify(params)}; })();")
-
-    val paramsArray = new V8Array(runtime)
-      .push(view)
-      .push(paramsObject)
-
-    val result = instance.executeStringFunction("render", paramsArray)
-
-    paramsArray.release()
-    paramsObject.release()
-    result
+    delegate.executeVoidFunction("addGlobal", params)
+    params.release()
+    value.release()
   }
 
-  private def setMessages(messages: Messages): Unit = {
-
-    runtime.registerJavaMethod(new JavaCallback {
-      override def invoke(receiver: V8Object, parameters: V8Array): AnyRef = {
-
-        // TODO: better errors when the key isn't present
-        val (key :: params) =
-          (0 until parameters.length).map(parameters.get).toList
-
-        // TODO: release native resources!!
-        messages(key.toString, params: _*)
-      }
-    }, "messages")
-
-    Nunjucks.addGlobal(instance, "messages", runtime.getObject("messages"))
+  def render(view: String, context: JsObject, messages: Messages)(implicit ec: ExecutionContext): Try[String] = {
+    registerMessagesHelper(messages)
+    render(view, context)
   }
 
-  def release(): Unit = {
-    instance.release()
-    runtime.release()
+  def render(view: String, context: JsObject)(implicit ec: ExecutionContext): Try[String] = {
+    executeStringFnViaCallback("render", view, context)(nodeJS, ec, njkContext.timeout)
+  }
+
+  override def release(): Unit = {
+    super.release()
+    nodeJS.release()
   }
 }
 
 object Nunjucks {
 
-  private def addGlobal(instance: V8Object, name: String, value: V8Value): Unit = {
-    val params = new V8Array(instance.getRuntime)
-      .push(name)
-      .push(value)
-    instance.executeVoidFunction("addGlobal", params)
-    params.release()
-  }
+  def apply(context: NunjucksContext): Nunjucks = {
 
-  private def addGlobal(instance: V8Object, name: String, value: String): Unit = {
-    val params = new V8Array(instance.getRuntime)
-      .push(name)
-      .push(value)
-    instance.executeVoidFunction("addGlobal", params)
-    params.release()
+    val runtime = SNodeJS.create()
+
+    val nunjucks =
+      runtime.require(context.nodeModulesDirectory / "nunjucks")
+
+    val viewDirectories = context.libDirectory :: context.viewsDirectories
+
+    val environment =
+      nunjucks.executeObjectFn(
+        "configure",
+        viewDirectories.map {
+          p =>
+            Json.toJson(p.pathAsString)
+        })
+
+    nunjucks.release()
+
+    val instance = new Nunjucks(environment.delegate, context)(runtime)
+    instance.registerRoutesHelper()
+    instance
   }
 }
