@@ -6,8 +6,9 @@ import akka.pattern.ask
 import akka.routing.FromConfig
 import akka.util.Timeout
 import javax.inject.{Inject, Singleton}
-import play.api.Environment
+import play.api.{Configuration, Environment}
 import play.api.i18n.Messages
+import play.api.inject.ApplicationLifecycle
 import play.api.libs.json.{JsObject, Json, Writes}
 import play.twirl.api.Html
 
@@ -19,12 +20,20 @@ import scala.util.control.NonFatal
 
 @Singleton
 class NunjucksRenderer @Inject() (
-                                   // TODO: create custom actor system
-                                   system: ActorSystem,
                                    environment: Environment,
-                                   njkContext: NunjucksContext
-                                 // TODO: don't use this execution context
-                                 )(implicit ec: ExecutionContext) {
+                                   configuration: Configuration,
+                                   lifecycle: ApplicationLifecycle,
+                                   njkContext: NunjucksContext,
+                                   playEC: ExecutionContext
+                                 ) {
+
+  private val akkaConfiguration = configuration.get[Configuration]("nunjucks").underlying
+
+  private val actorSystem: ActorSystem = ActorSystem("nunjucks", akkaConfiguration, environment.classLoader)
+
+  lifecycle.addStopHook(() => actorSystem.terminate())
+
+  private val nunjucksEC: ExecutionContext = actorSystem.dispatcher
 
   private implicit lazy val timeout: Timeout = njkContext.timeout
 
@@ -36,8 +45,8 @@ class NunjucksRenderer @Inject() (
 
   private val actor = {
     val actor = FromConfig(supervisorStrategy = restartStrategy)
-      .props(Props(new NunjucksActor(environment, njkContext)))
-    system.actorOf(actor, "nunjucks-actor")
+      .props(Props(new NunjucksActor(environment, njkContext)(nunjucksEC)))
+    actorSystem.actorOf(actor, "nunjucks-actor")
   }
 
   def renderAsync[A : Writes](view: String, context: A)(implicit messages: Messages): Future[Html] = {
@@ -49,9 +58,9 @@ class NunjucksRenderer @Inject() (
           .mapTo[Try[String]]
           .flatMap {
             result =>
-              Future.fromTry(result).map(Html(_))
-          }
-    }
+              Future.fromTry(result.map(Html(_)))
+          }(playEC)
+    }(playEC)
   }
 
   def render[A : Writes](
