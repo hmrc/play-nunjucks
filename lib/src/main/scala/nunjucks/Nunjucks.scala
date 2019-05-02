@@ -4,7 +4,8 @@ import com.eclipsesource.v8._
 import nunjucks.s2v8.{SNodeJS, SV8Object}
 import play.api.i18n.Messages
 import play.api.libs.json._
-import play.api.mvc.Call
+import play.api.mvc.{Call, RequestHeader}
+import views.html.helper.CSRF
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
@@ -75,6 +76,18 @@ class Nunjucks private(
     addGlobal("messages", fn)
   }
 
+  private def registerCsrfHelper(request: RequestHeader): Unit = {
+
+    val fn = new V8Function(delegate.getRuntime, new JavaCallback {
+      override def invoke(receiver: V8Object, parameters: V8Array): AnyRef = {
+
+        CSRF.formField(request).toString()
+      }
+    })
+
+    addGlobal("csrf", fn)
+  }
+
   private def addGlobal(key: String, value: V8Value): Unit = {
 
     val params = new V8Array(nodeJS.runtime)
@@ -86,8 +99,9 @@ class Nunjucks private(
     value.release()
   }
 
-  def render(view: String, context: JsObject, messages: Messages)(implicit ec: ExecutionContext): Try[String] = {
+  def render(view: String, context: JsObject, messages: Messages, request: RequestHeader)(implicit ec: ExecutionContext): Try[String] = {
     registerMessagesHelper(messages)
+    registerCsrfHelper(request)
     executeStringFnViaCallback("render", view, context)(nodeJS, ec, njkContext.timeout)
   }
 

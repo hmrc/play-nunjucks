@@ -10,6 +10,7 @@ import play.api.{Configuration, Environment}
 import play.api.i18n.Messages
 import play.api.inject.ApplicationLifecycle
 import play.api.libs.json.{JsObject, Json, Writes}
+import play.api.mvc.RequestHeader
 import play.twirl.api.Html
 
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -45,16 +46,16 @@ class NunjucksRenderer @Inject() (
 
   private val actor = {
     val actor = FromConfig(supervisorStrategy = restartStrategy)
-      .props(Props(new NunjucksActor(environment, njkContext)(nunjucksEC)))
+      .props(Props(new NunjucksActor(environment, njkContext, nunjucksEC)))
     actorSystem.actorOf(actor, "nunjucks-actor")
   }
 
-  def renderAsync[A : Writes](view: String, context: A)(implicit messages: Messages): Future[Html] = {
+  def renderAsync[A : Writes](view: String, context: A)(implicit messages: Messages, request: RequestHeader): Future[Html] = {
     Future.fromTry {
       Try { Json.toJson(context).asInstanceOf[JsObject] }
     }.flatMap {
       ctx =>
-        (actor ? NunjucksActor.Render(view, ctx, messages))
+        (actor ? NunjucksActor.Render(view, ctx, messages, request))
           .mapTo[Try[String]]
           .flatMap {
             result =>
@@ -67,7 +68,7 @@ class NunjucksRenderer @Inject() (
                           view: String,
                           context: A,
                           timeout: FiniteDuration = njkContext.timeout
-                        )(implicit messages: Messages): Html = {
+                        )(implicit messages: Messages, request: RequestHeader): Html = {
 
     Await.result(renderAsync(view, context), timeout)
   }

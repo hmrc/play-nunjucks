@@ -24,6 +24,8 @@
 
         <form action="{{ route("controllers.routes.QuestionController.post") }}" method="post">
 
+          {{ csrf()|safe }}
+
           {{ govukInput({
             label: {
               text: messages("questionPage.heading"),

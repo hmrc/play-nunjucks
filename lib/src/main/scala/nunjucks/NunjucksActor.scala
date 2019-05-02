@@ -4,21 +4,23 @@ import akka.actor.Actor
 import play.api.Environment
 import play.api.i18n.Messages
 import play.api.libs.json.JsObject
+import play.api.mvc.RequestHeader
 
 import scala.concurrent.ExecutionContext
 
 class NunjucksActor (
                       environment: Environment,
-                      context: NunjucksContext
-                    )(implicit ec: ExecutionContext) extends Actor {
+                      context: NunjucksContext,
+                      private implicit val ec: ExecutionContext
+                    ) extends Actor {
 
   import NunjucksActor._
 
   private val nunjucks = Nunjucks(context)
 
   override def receive: Receive = {
-    case Render(view, params, messages) =>
-      sender ! nunjucks.render(view, params, messages)
+    case Render(view, params, messages, request) =>
+      sender ! nunjucks.render(view, params, messages, request)
     case Stop =>
       nunjucks.release()
   }
@@ -30,6 +32,6 @@ class NunjucksActor (
 }
 
 object NunjucksActor {
-  case class Render(view: String, params: JsObject, messages: Messages)
+  case class Render(view: String, params: JsObject, messages: Messages, request: RequestHeader)
   case object Stop
 }

@@ -23,6 +23,7 @@ lazy val libSettings = Seq(
   version := "0.1.0-SNAPSHOT",
   libraryDependencies ++= Seq(
     "com.typesafe.play" %% "play" % PlayVersion.current % "test, provided",
+    "com.typesafe.play" %% "filters-helpers" % PlayVersion.current % "test, provided",
     "com.github.pathikrit" %% "better-files" % "3.5.0",
     "org.scalactic" %% "scalactic" % "3.0.5" % "test",
     "org.scalatest" %% "scalatest" % "3.0.5" % "test",
