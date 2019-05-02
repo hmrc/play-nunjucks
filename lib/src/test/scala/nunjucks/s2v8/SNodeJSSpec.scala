@@ -44,7 +44,7 @@ class SNodeJSSpec extends FreeSpec with MustMatchers with MockFactory with Gener
           val nodeJS = SNodeJS.create()
           val fn = mockFunction[JsArray, Unit]
 
-          fn expects args returning () once
+          fn expects args returning Unit once
 
           nodeJS.registerFn(name, fn)
           nodeJS.executeFn(name, args.value.map(JsValueWrapper): _*)

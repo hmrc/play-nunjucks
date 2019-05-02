@@ -1,9 +1,11 @@
 package controllers
 
-import com.google.inject.Inject
-import play.api.mvc.{Action, Controller}
+import javax.inject.Inject
+import play.api.mvc.{AbstractController, ControllerComponents}
 
-class TestController @Inject() extends Controller {
+class TestController @Inject() (
+                                 cc: ControllerComponents
+                               ) extends AbstractController(cc) {
 
   def routeWithArgs(string: String, int: Int) = Action {
     Ok

@@ -1,11 +1,11 @@
 package controllers
 
-import com.google.inject.{Inject, Singleton}
+import javax.inject.{Inject, Singleton}
 import nunjucks.{NunjucksRenderer, NunjucksSupport}
 import play.api.data.{Form, Forms}
-import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.i18n.I18nSupport
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, Controller}
+import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
 
 import scala.concurrent.ExecutionContext
 
@@ -13,8 +13,8 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class QuestionController @Inject() (
                                      val renderer: NunjucksRenderer,
-                                     val messagesApi: MessagesApi
-                                   )(implicit ec: ExecutionContext) extends Controller with I18nSupport with NunjucksSupport {
+                                     cc: ControllerComponents
+                                   )(implicit ec: ExecutionContext) extends AbstractController(cc) with I18nSupport with NunjucksSupport {
 
   private val form: Form[String] = Form(
     "value" -> Forms.text.verifying("questionPage.required", _.nonEmpty)

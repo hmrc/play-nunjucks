@@ -11,7 +11,11 @@ lazy val root = (project in file("."))
 
 lazy val commonSettings = Seq(
   organization := "uk.gov.hmrc",
-  scalaVersion := "2.11.12"
+  scalaVersion := "2.11.12",
+  scalacOptions ++= Seq(
+    "-Xfatal-warnings",
+    "-deprecation"
+  )
 )
 
 lazy val libSettings = Seq(
@@ -36,37 +40,38 @@ lazy val libSettings = Seq(
   target := target.value / name.value
 ) ++ commonSettings
 
-lazy val libMacOS = (project in file("lib"))
-  .enablePlugins(SbtWeb)
-  .settings(libSettings)
-  .settings(
-    name := name.value + "-mac",
-    libraryDependencies ++= Seq(
-      "com.eclipsesource.j2v8" % "j2v8_macosx_x86_64" % j2v8Version
-    )
-  )
-
-lazy val libLinux = (project in file("lib"))
-  .enablePlugins(SbtWeb)
-  .settings(libSettings)
-  .settings(
-    name := name.value + "-linux",
-    libraryDependencies ++= Seq(
-      "com.eclipsesource.j2v8" % "j2v8_linux_x86_64" % j2v8Version
-    )
-  )
-
-lazy val libWindows = (project in file("lib"))
-  .enablePlugins(SbtWeb)
-  .settings(libSettings)
-  .settings(
-    name := name.value + "-win32",
-    libraryDependencies ++= Seq(
-      "com.eclipsesource.j2v8" % "j2v8_win32_x86_64" % j2v8Version
-    )
-  )
-
 lazy val lib = {
+
+  lazy val libMacOS = (project in file("lib"))
+    .enablePlugins(SbtWeb)
+    .settings(libSettings)
+    .settings(
+      name := name.value + "-mac",
+      libraryDependencies ++= Seq(
+        "com.eclipsesource.j2v8" % "j2v8_macosx_x86_64" % j2v8Version
+      )
+    )
+
+  lazy val libLinux = (project in file("lib"))
+    .enablePlugins(SbtWeb)
+    .settings(libSettings)
+    .settings(
+      name := name.value + "-linux",
+      libraryDependencies ++= Seq(
+        "com.eclipsesource.j2v8" % "j2v8_linux_x86_64" % j2v8Version
+      )
+    )
+
+  lazy val libWindows = (project in file("lib"))
+    .enablePlugins(SbtWeb)
+    .settings(libSettings)
+    .settings(
+      name := name.value + "-win32",
+      libraryDependencies ++= Seq(
+        "com.eclipsesource.j2v8" % "j2v8_win32_x86_64" % j2v8Version
+      )
+    )
+
   if (SystemUtils.IS_OS_LINUX) {
     libLinux
   } else if (SystemUtils.IS_OS_MAC_OSX) {
@@ -79,38 +84,36 @@ lazy val lib = {
 }
 
 lazy val itServer = (project in file("it-server"))
-  .enablePlugins(PlayScala, SbtWeb, GatlingPlugin)
+  .enablePlugins(PlayScala, SbtWeb)
   .dependsOn(lib)
   .settings(commonSettings)
   .settings(
     name := "it-server",
     libraryDependencies ++= Seq(
+      guice,
       "org.webjars.npm" % "govuk-frontend" % "1.0.0",
       "org.scalactic" %% "scalactic" % "3.0.5" % "test",
       "org.scalatest" %% "scalatest" % "3.0.5" % "test",
       "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
-      "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1" % "test",
-      "io.gatling.highcharts" % "gatling-charts-highcharts" % "2.1.0" % "test",
-      "io.gatling"            % "gatling-test-framework"    % "2.1.0" % "test"
+      "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1" % "test"
     ),
     Concat.groups := Seq(
       "javascripts/application.js" -> group(Seq("lib/govuk-frontend/all.js"))
     ),
-    scalaSource in Gatling := (scalaSource in Test).value / "gatling",
     pipelineStages in Assets := Seq(concat, uglify),
-    WebKeys.webModuleGenerators in Assets += Def.task {
-
-      val nodeModules = baseDirectory.value / "node_modules"
-      val libs = (nodeModules ** "*" --- nodeModules) pair relativeTo(nodeModules)
-
-      val mappings = libs.map {
-        case (file, path) =>
-          file -> (WebKeys.webJarsDirectory in Assets).value / "lib" / path
-      }
-
-      IO.copy(mappings)
-      mappings.map(_._2)
-    }.dependsOn(JsEngineKeys.npmNodeModules in Assets).taskValue,
+//    WebKeys.webModuleGenerators in Assets += Def.task {
+//
+//      val nodeModules = baseDirectory.value / "node_modules"
+//      val libs = (nodeModules ** "*" --- nodeModules) pair relativeTo(nodeModules)
+//
+//      val mappings = libs.map {
+//        case (file, path) =>
+//          file -> (WebKeys.webJarsDirectory in Assets).value / "lib" / path
+//      }
+//
+//      IO.copy(mappings)
+//      mappings.map(_._2)
+//    }.dependsOn(JsEngineKeys.npmNodeModules in Assets).taskValue,
     managedClasspath in Runtime += Def.task {
 
       val nodeModules = baseDirectory.value / "node_modules"
@@ -119,12 +122,14 @@ lazy val itServer = (project in file("it-server"))
       val Pattern = """^([^/]+)/(.*)$""".r
       val mappings = libs.filter(_._2.matches(Pattern.toString)).map {
         case (file, Pattern(lib, path)) =>
-          file -> s"META-INF/resources/webjars/$lib/999-SNAPSHOT/$path"
+          // TODO: This 999-SNAPSHOT looks suspicious
+//          file -> s"META-INF/resources/webjars/$lib/999-SNAPSHOT/$path"
+          file -> s"META-INF/resources/webjars/$lib/$path"
       }
 
       val webJars = (resourceManaged in Compile).value / "webjars.jar"
       IO.zip(mappings, webJars)
 
       webJars
-    }.dependsOn(JsEngineKeys.npmNodeModules in Assets).value
+    }.value
   )

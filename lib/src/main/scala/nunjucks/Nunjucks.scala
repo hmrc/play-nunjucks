@@ -88,10 +88,6 @@ class Nunjucks private(
 
   def render(view: String, context: JsObject, messages: Messages)(implicit ec: ExecutionContext): Try[String] = {
     registerMessagesHelper(messages)
-    render(view, context)
-  }
-
-  def render(view: String, context: JsObject)(implicit ec: ExecutionContext): Try[String] = {
     executeStringFnViaCallback("render", view, context)(nodeJS, ec, njkContext.timeout)
   }
 

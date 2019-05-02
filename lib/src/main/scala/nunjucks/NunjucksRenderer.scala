@@ -19,9 +19,11 @@ import scala.util.control.NonFatal
 
 @Singleton
 class NunjucksRenderer @Inject() (
+                                   // TODO: create custom actor system
                                    system: ActorSystem,
                                    environment: Environment,
                                    njkContext: NunjucksContext
+                                 // TODO: don't use this execution context
                                  )(implicit ec: ExecutionContext) {
 
   private implicit lazy val timeout: Timeout = njkContext.timeout

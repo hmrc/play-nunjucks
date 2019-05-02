@@ -25,7 +25,7 @@ class RouteHelperSpec extends FreeSpec with MustMatchers {
       val nunjucks = Nunjucks(context)
 
       val result =
-        nunjucks.render("test-routes-helper.njk", Json.obj()).get
+        nunjucks.render("test-routes-helper.njk", Json.obj(), null).get
 
       result mustEqual controllers.routes.QuestionController.get().url
 
@@ -39,7 +39,7 @@ class RouteHelperSpec extends FreeSpec with MustMatchers {
       val nunjucks = Nunjucks(context)
 
       val result =
-        nunjucks.render("test-routes-helper-args.njk", Json.obj()).get
+        nunjucks.render("test-routes-helper-args.njk", Json.obj(), null).get
 
       result mustEqual controllers.routes.TestController.routeWithArgs("foo", 1).url
 
@@ -53,7 +53,7 @@ class RouteHelperSpec extends FreeSpec with MustMatchers {
       val nunjucks = Nunjucks(context)
 
       a [JavascriptError] mustBe thrownBy {
-        nunjucks.render("test-routes-helper-error.njk", Json.obj()).get
+        nunjucks.render("test-routes-helper-error.njk", Json.obj(), null).get
       }
 
       nunjucks.release()

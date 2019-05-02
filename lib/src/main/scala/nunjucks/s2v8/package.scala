@@ -26,6 +26,7 @@ package object s2v8 {
   implicit class RichJsArray(arr: JsArray) {
     def sv8Arr(implicit runtime: V8): SV8Array = {
       val json = Json.stringify(arr)
+      // TODO: can we remove the function here?
       new SV8Array(runtime.executeArrayScript(s"(function () { return ($json); })();"))
     }
   }
@@ -33,6 +34,7 @@ package object s2v8 {
   implicit class RichJsObj(obj: JsObject) {
     def sv8Obj(implicit runtime: V8): SV8Object = {
       val json = Json.stringify(obj)
+      // TODO: can we remove the function here?
       new SV8Object(runtime.executeObjectScript(s"(function () { return ($json); })();"))
     }
   }

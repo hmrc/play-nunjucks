@@ -92,7 +92,7 @@ class SV8Object(private[nunjucks] val delegate: V8Object) {
     })
 
     val params = args.toJsArray.sv8Arr.delegate
-      .push(callback.delegate)
+      .push(callback)
 
     delegate.executeVoidFunction(name, params)
 

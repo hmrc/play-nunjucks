@@ -52,7 +52,7 @@ class SV8ObjectSpec extends FreeSpec with MustMatchers with GeneratorDrivenPrope
             val runtime: V8 = nodeJS.runtime
             val fn = mockFunction[JsArray, Unit]
 
-            fn expects args returning () once
+            fn expects args returning Unit once
 
             nodeJS.registerFn(fnName, fn)
 

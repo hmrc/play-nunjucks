@@ -4,11 +4,10 @@ import java.net.URL
 import java.nio.file.{Files, Paths}
 
 import better.files._
-import com.google.inject.{Inject, Singleton}
+import javax.inject.{Inject, Singleton}
 import org.webjars.WebJarExtractor
 import play.api.{Configuration, Environment, Logger, Mode}
 
-import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 
 @Singleton
@@ -19,14 +18,45 @@ class DefaultNunjucksContext @Inject() (
 
   private val logger = Logger(this.getClass)
 
-  override lazy val timeout: FiniteDuration =
+  override val timeout: FiniteDuration =
     configuration.underlying.getInt("nunjucks.timeout").millis
 
-  override lazy val libDirectory: File = {
+  override val workingDirectory: File = {
+
+    val configuredDirectory = configuration
+      .getOptional[String]("nunjucks.workingDirectory")
+      .map(toAbsoluteFile)
+
+    configuredDirectory.foreach {
+      file =>
+        logger.info(s"setting working directory to: $file")
+    }
+
+    configuredDirectory.getOrElse {
+
+      if (environment.mode == Mode.Dev || environment.mode == Mode.Test) {
+
+        logger.info(s"no working directory set, in ${environment.mode}, " +
+          s"creating temporary directory in `${environment.rootPath}/target`")
+
+        toAbsoluteFile {
+          "target/" + configuration.underlying
+            .getString("nunjucks.devDirectory")
+        }
+      } else {
+
+        logger.info("no working directory set, creating temporary directory")
+        File.newTemporaryDirectory("nunjucks").deleteOnExit()
+      }
+    }.createIfNotExists(asDirectory = true, createParents = true)
+  }
+
+
+  override val libDirectory: File = {
     workingDirectory / configuration.underlying.getString("nunjucks.libDirectoryName")
   }
 
-  override lazy val nodeModulesDirectory: File = {
+  override val nodeModulesDirectory: File = {
 
     val NODE_MODULES_ZIP = "nodeModules.zip"
 
@@ -52,42 +82,12 @@ class DefaultNunjucksContext @Inject() (
     nodeModulesDirectory
   }
 
-  override lazy val workingDirectory: File = {
-
-    val configuredDirectory = configuration
-      .getString("nunjucks.workingDirectory")
-      .map(toAbsoluteFile)
-
-    configuredDirectory.foreach {
-      file =>
-        logger.info(s"setting working directory to: $file")
-    }
-
-    configuredDirectory.getOrElse {
-
-      if (environment.mode < Mode.Prod) {
-
-        logger.info(s"no working directory set, in ${environment.mode}, " +
-          s"creating temporary directory in `${environment.rootPath}/target`")
-
-        toAbsoluteFile {
-          "target/" + configuration.underlying
-            .getString("nunjucks.devDirectory")
-        }
-      } else {
-
-        logger.info("no working directory set, creating temporary directory")
-        File.newTemporaryDirectory("nunjucks").deleteOnExit()
-      }
-    }.createIfNotExists(asDirectory = true, createParents = true)
-  }
-
-  override lazy val viewsDirectories: List[File] = {
+  override val viewsDirectories: List[File] = {
 
     configuration
-      .getStringList("nunjucks.viewPaths")
+      .getOptional[Seq[String]]("nunjucks.viewPaths")
       .map {
-        _.asScala.toList
+        _.toList
           .flatMap(environment.resource)
           .map(toAbsoluteFile)
       }
@@ -100,9 +100,9 @@ class DefaultNunjucksContext @Inject() (
     val extractor = new WebJarExtractor(environment.classLoader)
 
     configuration
-      .getStringList("nunjucks.libs")
+      .getOptional[Seq[String]]("nunjucks.libs")
       .map {
-        _.asScala.map {
+        _.toList.map {
           lib =>
 
             val libDir = libDirectory / lib
