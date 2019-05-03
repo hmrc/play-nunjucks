@@ -3,6 +3,7 @@ import org.scalatest.{FreeSpec, MustMatchers}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.i18n.MessagesApi
 import play.api.libs.json.Json
+import play.api.test.FakeRequest
 import play.api.{Configuration, Environment}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -26,7 +27,7 @@ class MessagesHelperSpec extends FreeSpec with MustMatchers with GuiceOneAppPerS
       val messages = app.injector.instanceOf[MessagesApi].preferred(Seq.empty)
 
       val result =
-        nunjucks.render("test-messages-helper.njk", Json.obj(), messages).get
+        nunjucks.render("test-messages-helper.njk", Json.obj(), messages, FakeRequest()).get
 
       result mustEqual "foobar"
 
@@ -39,7 +40,7 @@ class MessagesHelperSpec extends FreeSpec with MustMatchers with GuiceOneAppPerS
       val messages = app.injector.instanceOf[MessagesApi].preferred(Seq.empty)
 
       val result =
-        nunjucks.render("test-messages-helper-args.njk", Json.obj("name" -> "World"), messages).get
+        nunjucks.render("test-messages-helper-args.njk", Json.obj("name" -> "World"), messages, FakeRequest()).get
 
       result mustEqual "Hello, World!"
 

@@ -1,8 +1,9 @@
 package nunjucks
 
-import nunjucks.s2v8.{JavascriptError, SNodeJS}
+import nunjucks.s2v8.JavascriptError
 import org.scalatest.{FreeSpec, MustMatchers}
 import play.api.libs.json.Json
+import play.api.test.FakeRequest
 import play.api.{Configuration, Environment}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -24,7 +25,7 @@ class NunjucksSpec extends FreeSpec with MustMatchers {
 
       val nunjucks = Nunjucks(context)
 
-      val result = nunjucks.render("test.njk", Json.obj("name" -> "World"), null).get
+      val result = nunjucks.render("test.njk", Json.obj("name" -> "World"), null, FakeRequest()).get
       result mustEqual "Hello, World!"
 
       nunjucks.release()
@@ -35,7 +36,7 @@ class NunjucksSpec extends FreeSpec with MustMatchers {
       val nunjucks = Nunjucks(context)
 
       val result = intercept [JavascriptError] {
-        nunjucks.render("test-import-not-found.njk", Json.obj("name" -> "World"), null).get
+        nunjucks.render("test-import-not-found.njk", Json.obj("name" -> "World"), null, FakeRequest()).get
       }
 
       result.getMessage must include("Error: template not found: some-unknown-file")

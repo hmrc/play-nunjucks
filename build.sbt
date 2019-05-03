@@ -6,9 +6,33 @@ lazy val libraryVersion = "0.1.0-SNAPSHOT"
 lazy val j2v8Version = "4.6.0"
 
 lazy val root = (project in file("."))
-  .aggregate(libMacOS, libLinux, libWindows, itServer, plugin)
   .settings(
-    parallelExecution in Test := false
+    parallelExecution in Test := false,
+    test := {
+      (test in (lib.project, Test)).value
+      (test in (itServer.project, Test)).value
+    },
+    publish := {
+      (publish in plugin.project).value
+      (publish in libMacOS.project).value
+      (publish in libLinux.project).value
+      (publish in libWindows.project).value
+    },
+    publishLocal := {
+      (publishLocal in plugin.project).value
+      (publishLocal in libMacOS.project).value
+      (publishLocal in libLinux.project).value
+      (publishLocal in libWindows.project).value
+    },
+    publishM2 := {
+      (publishM2 in plugin.project).value
+      (publishM2 in libMacOS.project).value
+      (publishM2 in libLinux.project).value
+      (publishM2 in libWindows.project).value
+    },
+    run := {
+      (run in (itServer.project, Compile)).evaluated
+    }
   )
 
 lazy val commonSettings = Seq(
@@ -25,6 +49,7 @@ lazy val libSettings = Seq(
   scalaVersion := "2.11.12",
   libraryDependencies ++= Seq(
     "com.typesafe.play" %% "play" % PlayVersion.current % "test, provided",
+    "com.typesafe.play" %% "play-test" % PlayVersion.current % "test",
     "com.typesafe.play" %% "filters-helpers" % PlayVersion.current % "test, provided",
     "com.github.pathikrit" %% "better-files" % "3.5.0",
     "org.scalactic" %% "scalactic" % "3.0.5" % "test",

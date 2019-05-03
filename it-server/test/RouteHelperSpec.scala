@@ -2,6 +2,7 @@ import nunjucks.s2v8.{JavascriptError, SNodeJS}
 import nunjucks.{DefaultNunjucksContext, Nunjucks, NunjucksContext}
 import org.scalatest.{FreeSpec, MustMatchers}
 import play.api.libs.json.Json
+import play.api.test.FakeRequest
 import play.api.{Configuration, Environment}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -25,7 +26,7 @@ class RouteHelperSpec extends FreeSpec with MustMatchers {
       val nunjucks = Nunjucks(context)
 
       val result =
-        nunjucks.render("test-routes-helper.njk", Json.obj(), null).get
+        nunjucks.render("test-routes-helper.njk", Json.obj(), null, FakeRequest()).get
 
       result mustEqual controllers.routes.QuestionController.get().url
 
@@ -39,7 +40,7 @@ class RouteHelperSpec extends FreeSpec with MustMatchers {
       val nunjucks = Nunjucks(context)
 
       val result =
-        nunjucks.render("test-routes-helper-args.njk", Json.obj(), null).get
+        nunjucks.render("test-routes-helper-args.njk", Json.obj(), null, FakeRequest()).get
 
       result mustEqual controllers.routes.TestController.routeWithArgs("foo", 1).url
 
@@ -53,7 +54,7 @@ class RouteHelperSpec extends FreeSpec with MustMatchers {
       val nunjucks = Nunjucks(context)
 
       a [JavascriptError] mustBe thrownBy {
-        nunjucks.render("test-routes-helper-error.njk", Json.obj(), null).get
+        nunjucks.render("test-routes-helper-error.njk", Json.obj(), null, FakeRequest()).get
       }
 
       nunjucks.release()
