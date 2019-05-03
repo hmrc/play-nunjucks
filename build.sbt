@@ -1,17 +1,18 @@
 import org.apache.commons.lang3.SystemUtils
 import play.core.PlayVersion
 
+lazy val libraryVersion = "0.1.0-SNAPSHOT"
+
 lazy val j2v8Version = "4.6.0"
 
 lazy val root = (project in file("."))
-  .aggregate(lib, itServer)
+  .aggregate(libMacOS, libLinux, libWindows, itServer, plugin)
   .settings(
     parallelExecution in Test := false
   )
 
 lazy val commonSettings = Seq(
   organization := "uk.gov.hmrc",
-  scalaVersion := "2.11.12",
   scalacOptions ++= Seq(
     "-Xfatal-warnings",
     "-deprecation"
@@ -20,7 +21,8 @@ lazy val commonSettings = Seq(
 
 lazy val libSettings = Seq(
   name := "play-nunjucks",
-  version := "0.1.0-SNAPSHOT",
+  version := libraryVersion,
+  scalaVersion := "2.11.12",
   libraryDependencies ++= Seq(
     "com.typesafe.play" %% "play" % PlayVersion.current % "test, provided",
     "com.typesafe.play" %% "filters-helpers" % PlayVersion.current % "test, provided",
@@ -41,38 +43,43 @@ lazy val libSettings = Seq(
   target := target.value / name.value
 ) ++ commonSettings
 
-lazy val lib = {
-
-  lazy val libMacOS = (project in file("lib"))
-    .enablePlugins(SbtWeb)
-    .settings(libSettings)
-    .settings(
-      name := name.value + "-mac",
-      libraryDependencies ++= Seq(
-        "com.eclipsesource.j2v8" % "j2v8_macosx_x86_64" % j2v8Version
-      )
+lazy val libMacOS = (project in file("lib"))
+  .enablePlugins(SbtWeb)
+  .settings(libSettings)
+  .settings(
+    name := name.value + "-mac",
+    version := libraryVersion,
+    scalaVersion := "2.11.12",
+    libraryDependencies ++= Seq(
+      "com.eclipsesource.j2v8" % "j2v8_macosx_x86_64" % j2v8Version
     )
+  )
 
-  lazy val libLinux = (project in file("lib"))
-    .enablePlugins(SbtWeb)
-    .settings(libSettings)
-    .settings(
-      name := name.value + "-linux",
-      libraryDependencies ++= Seq(
-        "com.eclipsesource.j2v8" % "j2v8_linux_x86_64" % j2v8Version
-      )
+lazy val libLinux = (project in file("lib"))
+  .enablePlugins(SbtWeb)
+  .settings(libSettings)
+  .settings(
+    name := name.value + "-linux",
+    version := libraryVersion,
+    scalaVersion := "2.11.12",
+    libraryDependencies ++= Seq(
+      "com.eclipsesource.j2v8" % "j2v8_linux_x86_64" % j2v8Version
     )
+  )
 
-  lazy val libWindows = (project in file("lib"))
-    .enablePlugins(SbtWeb)
-    .settings(libSettings)
-    .settings(
-      name := name.value + "-win32",
-      libraryDependencies ++= Seq(
-        "com.eclipsesource.j2v8" % "j2v8_win32_x86_64" % j2v8Version
-      )
+lazy val libWindows = (project in file("lib"))
+  .enablePlugins(SbtWeb)
+  .settings(libSettings)
+  .settings(
+    name := name.value + "-win32",
+    version := libraryVersion,
+    scalaVersion := "2.11.12",
+    libraryDependencies ++= Seq(
+      "com.eclipsesource.j2v8" % "j2v8_win32_x86_64" % j2v8Version
     )
+  )
 
+def lib = {
   if (SystemUtils.IS_OS_LINUX) {
     libLinux
   } else if (SystemUtils.IS_OS_MAC_OSX) {
@@ -90,6 +97,7 @@ lazy val itServer = (project in file("it-server"))
   .settings(commonSettings)
   .settings(
     name := "it-server",
+    scalaVersion := "2.11.12",
     libraryDependencies ++= Seq(
       guice,
       "org.webjars.npm" % "govuk-frontend" % "1.0.0",
@@ -101,36 +109,17 @@ lazy val itServer = (project in file("it-server"))
     Concat.groups := Seq(
       "javascripts/application.js" -> group(Seq("lib/govuk-frontend/all.js"))
     ),
-    pipelineStages in Assets := Seq(concat, uglify),
-//    WebKeys.webModuleGenerators in Assets += Def.task {
-//
-//      val nodeModules = baseDirectory.value / "node_modules"
-//      val libs = (nodeModules ** "*" --- nodeModules) pair relativeTo(nodeModules)
-//
-//      val mappings = libs.map {
-//        case (file, path) =>
-//          file -> (WebKeys.webJarsDirectory in Assets).value / "lib" / path
-//      }
-//
-//      IO.copy(mappings)
-//      mappings.map(_._2)
-//    }.dependsOn(JsEngineKeys.npmNodeModules in Assets).taskValue,
-    managedClasspath in Runtime += Def.task {
-
-      val nodeModules = baseDirectory.value / "node_modules"
-      val libs = (nodeModules ** "*" --- nodeModules) pair relativeTo(nodeModules)
-
-      val Pattern = """^([^/]+)/(.*)$""".r
-      val mappings = libs.filter(_._2.matches(Pattern.toString)).map {
-        case (file, Pattern(lib, path)) =>
-          // TODO: This 999-SNAPSHOT looks suspicious
-//          file -> s"META-INF/resources/webjars/$lib/999-SNAPSHOT/$path"
-          file -> s"META-INF/resources/webjars/$lib/$path"
-      }
-
-      val webJars = (resourceManaged in Compile).value / "webjars.jar"
-      IO.zip(mappings, webJars)
-
-      webJars
-    }.value
+    pipelineStages in Assets := Seq(concat, uglify)
   )
+
+lazy val plugin = (project in file("plugin"))
+  .enablePlugins(BuildInfoPlugin)
+  .settings(
+    sbtPlugin := true,
+    version := libraryVersion,
+    name := "play-nunjucks-plugin",
+    libraryDependencies += "org.apache.commons" % "commons-lang3" % "3.7",
+    buildInfoKeys := Seq[BuildInfoKey](version),
+    buildInfoPackage := "uk.gov.hmrc.nunjucks.plugin"
+  )
+  .settings(commonSettings)
