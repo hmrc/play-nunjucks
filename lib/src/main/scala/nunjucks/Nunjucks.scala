@@ -14,7 +14,8 @@ import scala.util.control.NonFatal
 
 class Nunjucks private(
                         delegate: V8Object,
-                        njkContext: NunjucksContext
+                        njkContext: NunjucksContext,
+                        classLoader: ClassLoader
                       )(implicit nodeJS: SNodeJS) extends SV8Object(delegate) {
 
   import s2v8._
@@ -43,13 +44,14 @@ class Nunjucks private(
 
           val `class` = pieces.init.last
           val route   = pieces.last
-          val field   = Class.forName(`package`).getField(`class`)
+          val field   = Class.forName(`package`, false, classLoader).getField(`class`)
           val method  = field.getType.getMethods.find(_.getName == route).get
 
           method.invoke(field.get(null), args: _*).asInstanceOf[Call].url
         } catch {
           case NonFatal(e) =>
-            throw RouteHelperError(routeString, args, e)
+            //throw RouteHelperError(routeString, args, e)
+          throw e
         }
       }
     })
@@ -113,7 +115,7 @@ class Nunjucks private(
 
 object Nunjucks {
 
-  def apply(context: NunjucksContext): Nunjucks = {
+  def apply(context: NunjucksContext, classLoader: ClassLoader): Nunjucks = {
 
     val runtime = SNodeJS.create()
 
@@ -132,7 +134,7 @@ object Nunjucks {
 
     nunjucks.release()
 
-    val instance = new Nunjucks(environment.delegate, context)(runtime)
+    val instance = new Nunjucks(environment.delegate, context, classLoader)(runtime)
     instance.registerRoutesHelper()
     instance
   }

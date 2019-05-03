@@ -16,7 +16,7 @@ class NunjucksActor (
 
   import NunjucksActor._
 
-  private val nunjucks = Nunjucks(context)
+  private val nunjucks = Nunjucks(context, environment.classLoader)
 
   override def receive: Receive = {
     case Render(view, params, messages, request) =>
