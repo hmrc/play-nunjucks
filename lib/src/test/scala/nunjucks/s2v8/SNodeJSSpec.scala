@@ -3,13 +3,13 @@ package nunjucks.s2v8
 import better.files.File
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{FreeSpec, MustMatchers}
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json.{JsArray, JsObject, Json}
 
 import scala.language.postfixOps
 
-class SNodeJSSpec extends FreeSpec with MustMatchers with MockFactory with GeneratorDrivenPropertyChecks with JsonGenerators {
+class SNodeJSSpec extends FreeSpec with MustMatchers with MockFactory with ScalaCheckDrivenPropertyChecks with JsonGenerators {
 
   "SNodeJS" - {
 

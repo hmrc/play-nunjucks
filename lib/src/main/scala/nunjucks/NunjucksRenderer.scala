@@ -70,6 +70,6 @@ class NunjucksRenderer @Inject() (
                           timeout: FiniteDuration = njkContext.timeout
                         )(implicit messages: Messages, request: RequestHeader): Html = {
 
-    Await.result(renderAsync(view, context), timeout)
+    Await.result(renderAsync(view, context), 2.seconds)
   }
 }

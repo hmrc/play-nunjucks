@@ -34,6 +34,20 @@ class RouteHelperSpec extends FreeSpec with MustMatchers {
       runtime.release()
     }
 
+    "must return the reverse route for a given endpoint in a sub router" in {
+
+      implicit val runtime: SNodeJS = SNodeJS.create()
+      val nunjucks = Nunjucks(context)
+
+      val result =
+        nunjucks.render("test-routes-helper-sub.njk", Json.obj(), null, FakeRequest()).get
+
+      result mustEqual controllers.sub.routes.TestController.ok().url
+
+      nunjucks.release()
+      runtime.release()
+    }
+
     "must return the reverse route for a given endpoint with arguments" in {
 
       implicit val runtime: SNodeJS = SNodeJS.create()

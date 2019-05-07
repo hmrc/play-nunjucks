@@ -52,8 +52,8 @@ lazy val libSettings = Seq(
     "com.typesafe.play" %% "play-test" % PlayVersion.current % "test",
     "com.typesafe.play" %% "filters-helpers" % PlayVersion.current % "test, provided",
     "com.github.pathikrit" %% "better-files" % "3.5.0",
-    "org.scalactic" %% "scalactic" % "3.0.5" % "test",
-    "org.scalatest" %% "scalatest" % "3.0.5" % "test",
+    "org.scalactic" %% "scalactic" % "3.0.7" % "test",
+    "org.scalatest" %% "scalatest" % "3.0.7" % "test",
     "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
     "org.scalamock" %% "scalamock" % "4.1.0" % "test",
     "org.webjars" % "webjars-locator-core" % "0.35"
@@ -126,8 +126,8 @@ lazy val itServer = (project in file("it-server"))
     libraryDependencies ++= Seq(
       guice,
       "org.webjars.npm" % "govuk-frontend" % "1.0.0",
-      "org.scalactic" %% "scalactic" % "3.0.5" % "test",
-      "org.scalatest" %% "scalatest" % "3.0.5" % "test",
+      "org.scalactic" %% "scalactic" % "3.0.7" % "test",
+      "org.scalatest" %% "scalatest" % "3.0.7" % "test",
       "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
       "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1" % "test"
     ),

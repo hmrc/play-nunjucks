@@ -6,12 +6,13 @@ import org.scalacheck.Gen
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{FreeSpec, MustMatchers, TryValues}
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json._
 
 import scala.language.postfixOps
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class SV8ObjectSpec extends FreeSpec with MustMatchers with GeneratorDrivenPropertyChecks
+class SV8ObjectSpec extends FreeSpec with MustMatchers with ScalaCheckDrivenPropertyChecks
   with JsonGenerators with MockFactory with TryValues {
 
   val genNonEmptyString: Gen[String] = {

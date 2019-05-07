@@ -1,3 +1,5 @@
+->         /sub                               sub.Routes
+
 GET        /public/*file                      controllers.Assets.versioned(path = "/public", file)
 
 GET        /                                  controllers.QuestionController.get
