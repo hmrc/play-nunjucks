@@ -197,7 +197,7 @@ class SV8ObjectSpec extends FreeSpec with MustMatchers with ScalaCheckDrivenProp
               )
 
               val result = obj.executeStringFnViaCallback(fieldName, args.value.map(JsValueWrapper): _*)
-              result.failed.get.getMessage mustEqual s"""{"message":"$errorMessage"}"""
+              result.failed.get.getMessage mustEqual errorMessage
 
               obj.release()
               nodeJS.release()

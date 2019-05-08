@@ -1,4 +1,4 @@
-import nunjucks.s2v8.{JavascriptError, SNodeJS}
+import nunjucks.s2v8.SNodeJS
 import nunjucks.{DefaultNunjucksContext, Nunjucks, NunjucksContext}
 import org.scalatest.{FreeSpec, MustMatchers}
 import play.api.libs.json.Json

@@ -1,7 +1,7 @@
 {% extends "govuk-frontend/template.njk" %}
 
 {% block head %}
-  {% include "includes/head.html" %}
+  {% include "includes/head.njk" %}
 {% endblock %}
 
 {% block header %}
@@ -16,6 +16,6 @@
 
 {% block bodyEnd %}
   {% block scripts %}
-    {% include "includes/scripts.html" %}
+    {% include "includes/scripts.njk" %}
   {% endblock %}
 {% endblock %}

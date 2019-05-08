@@ -19,7 +19,7 @@ class DefaultNunjucksContext @Inject() (
   private val logger = Logger(this.getClass)
 
   override val timeout: FiniteDuration =
-    configuration.underlying.getInt("nunjucks.timeout").millis
+    configuration.get[Int]("nunjucks.timeout").millis
 
   override val workingDirectory: File = {
 
@@ -40,8 +40,7 @@ class DefaultNunjucksContext @Inject() (
           s"creating temporary directory in `${environment.rootPath}/target`")
 
         toAbsoluteFile {
-          "target/" + configuration.underlying
-            .getString("nunjucks.devDirectory")
+          "target/" + configuration.get[String]("nunjucks.devDirectory")
         }
       } else {
 
@@ -53,7 +52,7 @@ class DefaultNunjucksContext @Inject() (
 
 
   override val libDirectory: File = {
-    workingDirectory / configuration.underlying.getString("nunjucks.libDirectoryName")
+    workingDirectory / configuration.get[String]("nunjucks.libDirectoryName")
   }
 
   override val nodeModulesDirectory: File = {
