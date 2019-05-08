@@ -4,14 +4,13 @@ import com.eclipsesource.v8._
 import nunjucks.s2v8.{SNodeJS, SV8Object}
 import play.api.i18n.Messages
 import play.api.libs.json._
-import play.api.mvc.{Call, RequestHeader}
+import play.api.mvc.RequestHeader
 import play.api.routing.{JavaScriptReverseRoute, JavaScriptReverseRouter}
 import views.html.helper.CSRF
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.util.Try
-import scala.util.control.NonFatal
 
 class Nunjucks private(
                         delegate: V8Object,

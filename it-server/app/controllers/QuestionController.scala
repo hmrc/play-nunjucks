@@ -32,7 +32,7 @@ class QuestionController @Inject() (
         errors =>
           BadRequest(renderer.render("question.njk", Json.obj("form" -> errors))),
         postcode =>
-          Redirect(controllers.routes.QuestionController.get).addingToSession("postcode" -> postcode)
+          Redirect(controllers.routes.QuestionController.get()).addingToSession("postcode" -> postcode)
       )
   }
 }

@@ -35,11 +35,9 @@ class NunjucksSpec extends FreeSpec with MustMatchers {
 
       val nunjucks = Nunjucks(context)
 
-      val result = intercept [JavascriptError] {
+      a[RuntimeException] mustBe thrownBy {
         nunjucks.render("test-import-not-found.njk", Json.obj("name" -> "World"), null, FakeRequest()).get
       }
-
-      result.getMessage must include("Error: template not found: some-unknown-file")
 
       nunjucks.release()
     }

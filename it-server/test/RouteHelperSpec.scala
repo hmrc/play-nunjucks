@@ -67,7 +67,7 @@ class RouteHelperSpec extends FreeSpec with MustMatchers {
       implicit val runtime: SNodeJS = SNodeJS.create()
       val nunjucks = Nunjucks(context)
 
-      a [JavascriptError] mustBe thrownBy {
+      a [RuntimeException] mustBe thrownBy {
         nunjucks.render("test-routes-helper-error.njk", Json.obj(), null, FakeRequest()).get
       }
 

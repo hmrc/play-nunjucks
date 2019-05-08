@@ -9,7 +9,7 @@
 
   {{ govukBackLink({
     text: messages("site.back")
-  }) }}
+  }) }
 
   <div class="govuk-main-wrapper">
     <div class="govuk-grid-row">
@@ -22,9 +22,9 @@
           }) }}
         {% endif %}
 
-        <form action="{{ route("controllers.routes.QuestionController.post") }}" method="post">
+        <form action="{{ routes.controllers.QuestionController.post().url }}" method="post">
 
-          {{ csrf()|safe }}
+          {{ csrf() | safe }}
 
           {{ govukInput({
             label: {

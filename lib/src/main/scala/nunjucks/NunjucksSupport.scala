@@ -2,14 +2,12 @@ package nunjucks
 
 import play.api.data.Form
 import play.api.i18n.Messages
-import play.api.libs.json.{Json, Writes}
+import play.api.libs.json.{JsObject, Json, OWrites}
 
 trait NunjucksSupport {
 
-  def renderer: NunjucksRenderer
-
-  implicit def writes(implicit messages: Messages): Writes[Form[_]] =
-    Writes {
+  protected implicit def formOWrites(implicit messages: Messages): OWrites[Form[_]] =
+    OWrites {
       form =>
 
         form.mapping.mappings.map {
@@ -40,4 +38,7 @@ trait NunjucksSupport {
           }
         )
     }
+
+  protected implicit val jsObjectOWrites: OWrites[JsObject] =
+    OWrites(identity)
 }

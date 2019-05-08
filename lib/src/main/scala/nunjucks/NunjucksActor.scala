@@ -1,12 +1,13 @@
 package nunjucks
 
 import akka.actor.Actor
-import play.api.Environment
 import play.api.i18n.Messages
-import play.api.libs.json.JsObject
+import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.RequestHeader
+import play.api.{Environment, PlayException}
 
 import scala.concurrent.ExecutionContext
+import scala.util.Failure
 
 class NunjucksActor (
                       environment: Environment,
