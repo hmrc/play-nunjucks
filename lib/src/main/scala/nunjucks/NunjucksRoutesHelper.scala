@@ -45,18 +45,31 @@ class DevelopmentNunjucksRoutesHelper @Inject() (environment: Environment) exten
 
   private val logger = Logger(getClass)
 
-  private class RoutesClassLoader(parent: ClassLoader, url: URL*) extends URLClassLoader(url.toArray, parent) {
-    def packages: Array[Package] = getPackages
-  }
-
   override def routes: Seq[JavaScriptReverseRoute] = {
 
-    val rootPath = environment.rootPath.toScala.glob("target/*/routes").toList
+    val routesUrls = environment.rootPath.toScala.glob("target/*/classes").toList.filter(_.isDirectory).map(_.url)
 
-    rootPath.foreach(path => logger.info(path.toString))
+    val classLoader = new URLClassLoader(routesUrls.toArray, environment.classLoader)
 
-//    val classLoader = new RoutesClassLoader(environment.classLoader, ???)
+    environment.rootPath.toScala.glob("target/*/classes/**/routes.class")
+      .toList
+      .map(environment.rootPath.toScala.relativize)
+      .map(path => path.toString.replaceAll("^target/[^/]+/classes/", "").replaceAll("routes.class$", "").replaceAll("/", "."))
+      .flatMap(p => Try(Class.forName(s"${p}routes$$javascript", false, classLoader).getDeclaredFields).toOption)
+      .flatten
+      .flatMap {
+        field =>
 
-    Seq.empty
+          val instance = field.get(null)
+          val fieldClass = field.getType
+
+          fieldClass.getDeclaredMethods.filter {
+            _.getReturnType == classOf[JavaScriptReverseRoute]
+          }.map {
+            method =>
+              logger.info(s"route: $method")
+              method.invoke(instance).asInstanceOf[JavaScriptReverseRoute]
+          }
+      }
   }
 }
