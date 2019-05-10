@@ -12,7 +12,7 @@ import scala.concurrent.ExecutionContext
 
 @Singleton
 class QuestionController @Inject() (
-                                     val renderer: NunjucksRenderer,
+                                     renderer: NunjucksRenderer,
                                      cc: ControllerComponents
                                    )(implicit ec: ExecutionContext) extends AbstractController(cc) with I18nSupport with NunjucksSupport {
 

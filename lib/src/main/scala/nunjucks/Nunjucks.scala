@@ -2,10 +2,11 @@ package nunjucks
 
 import com.eclipsesource.v8._
 import nunjucks.s2v8.{SNodeJS, SV8Object}
+import play.api.Logger
 import play.api.i18n.Messages
 import play.api.libs.json._
 import play.api.mvc.RequestHeader
-import play.api.routing.{JavaScriptReverseRoute, JavaScriptReverseRouter}
+import play.api.routing.JavaScriptReverseRouter
 import views.html.helper.CSRF
 
 import scala.concurrent.ExecutionContext
@@ -15,36 +16,19 @@ import scala.util.Try
 class Nunjucks private(
                         delegate: V8Object,
                         njkContext: NunjucksContext,
-                        classLoader: ClassLoader
+                        routesHelper: NunjucksRoutesHelper
                       )(implicit nodeJS: SNodeJS) extends SV8Object(delegate) {
 
   import s2v8._
 
+  private val logger = Logger(this.getClass)
+
   private implicit val timeout: FiniteDuration = 100.millis
-
-  private val reverseRoutes = Package.getPackages.toList
-    .map(_.getName)
-    .filter(_.startsWith("controllers"))
-    .flatMap(p => Try(Class.forName(s"$p.routes$$javascript").getDeclaredFields).toOption)
-    .flatten
-    .flatMap {
-      field =>
-
-        val instance = field.get(null)
-        val fieldClass = field.getType
-
-        fieldClass.getDeclaredMethods.filter {
-          _.getReturnType == classOf[JavaScriptReverseRoute]
-        }.map {
-          method =>
-            method.invoke(instance).asInstanceOf[JavaScriptReverseRoute]
-        }
-    }
 
   private def registerRoutesHelper(request: RequestHeader): Unit = {
 
     val script = {
-      val script = JavaScriptReverseRouter("routes")(reverseRoutes: _*)(request).toString
+      val script = JavaScriptReverseRouter("routes")(routesHelper.routes: _*)(request).toString
       s"(function () { $script; return routes; })();"
     }
 
@@ -109,7 +93,7 @@ class Nunjucks private(
 
 object Nunjucks {
 
-  def apply(context: NunjucksContext, classLoader: ClassLoader = ClassLoader.getSystemClassLoader): Nunjucks = {
+  def apply(context: NunjucksContext, routesHelper: NunjucksRoutesHelper): Nunjucks = {
 
     val runtime = SNodeJS.create()
 
@@ -128,6 +112,6 @@ object Nunjucks {
 
     nunjucks.release()
 
-    new Nunjucks(environment.delegate, context, classLoader)(runtime)
+    new Nunjucks(environment.delegate, context, routesHelper)(runtime)
   }
 }

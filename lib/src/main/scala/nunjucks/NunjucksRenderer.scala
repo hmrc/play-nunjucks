@@ -10,7 +10,7 @@ import play.api.i18n.Messages
 import play.api.inject.ApplicationLifecycle
 import play.api.libs.json.OWrites
 import play.api.mvc.RequestHeader
-import play.api.{Configuration, Environment}
+import play.api.{Configuration, Environment, Logger}
 import play.twirl.api.Html
 
 import scala.concurrent.duration._
@@ -25,9 +25,11 @@ class NunjucksRenderer @Inject() (
                                    configuration: Configuration,
                                    lifecycle: ApplicationLifecycle,
                                    njkContext: NunjucksContext,
+                                   routesHelper: NunjucksRoutesHelper,
                                    playEC: ExecutionContext
                                  ) {
 
+  private val logger = Logger(this.getClass)
 
   private val actorSystem: ActorSystem = {
 
@@ -51,7 +53,7 @@ class NunjucksRenderer @Inject() (
     }
 
     val actor = FromConfig(supervisorStrategy = restartStrategy)
-      .props(Props(new NunjucksActor(environment, njkContext, nunjucksEC)))
+      .props(Props(new NunjucksActor(routesHelper, njkContext, nunjucksEC)))
     actorSystem.actorOf(actor, "nunjucks-actor")
   }
 

@@ -2,22 +2,20 @@ package nunjucks
 
 import akka.actor.Actor
 import play.api.i18n.Messages
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.JsObject
 import play.api.mvc.RequestHeader
-import play.api.{Environment, PlayException}
 
 import scala.concurrent.ExecutionContext
-import scala.util.Failure
 
 class NunjucksActor (
-                      environment: Environment,
+                      routesHelper: NunjucksRoutesHelper,
                       context: NunjucksContext,
                       private implicit val ec: ExecutionContext
                     ) extends Actor {
 
   import NunjucksActor._
 
-  private val nunjucks = Nunjucks(context, environment.classLoader)
+  private val nunjucks = Nunjucks(context, routesHelper)
 
   override def receive: Receive = {
     case Render(view, params, messages, request) =>
