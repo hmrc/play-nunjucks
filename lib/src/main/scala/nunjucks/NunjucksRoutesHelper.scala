@@ -18,7 +18,7 @@ class ProductionNunjucksRoutesHelper @Inject() extends NunjucksRoutesHelper {
 
   private val logger = Logger(getClass)
 
-  val routes: Seq[JavaScriptReverseRoute] = {
+  lazy val routes: Seq[JavaScriptReverseRoute] = {
 
     Package.getPackages
       .map(_.getName)
