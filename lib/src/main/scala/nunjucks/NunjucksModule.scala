@@ -4,9 +4,11 @@ import play.api.{Configuration, Environment, Mode}
 import play.api.inject.{Binding, Module}
 
 class NunjucksModule extends Module {
+
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] =
     Seq(
-      bind[NunjucksContext].to[DefaultNunjucksContext],
+      bind[NunjucksRenderer].toSelf.eagerly,
+      bind[NunjucksSetup].toSelf.eagerly,
       if (environment.mode == Mode.Prod) {
         bind[NunjucksRoutesHelper].to[ProductionNunjucksRoutesHelper]
       } else {

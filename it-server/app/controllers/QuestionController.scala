@@ -23,14 +23,14 @@ class QuestionController @Inject() (
   def get: Action[AnyContent] = Action {
     implicit request =>
       val form2 = request.session.get("postcode").map(form.fill).getOrElse(form)
-      Ok(renderer.render("question.njk", Json.obj("form" -> form2)))
+      Ok(renderer.render("question.njk", Json.obj("form" -> form2)).get)
   }
 
   def post: Action[AnyContent] = Action {
     implicit request =>
       form.bindFromRequest().fold(
         errors =>
-          BadRequest(renderer.render("question.njk", Json.obj("form" -> errors))),
+          BadRequest(renderer.render("question.njk", Json.obj("form" -> errors)).get),
         postcode =>
           Redirect(controllers.routes.QuestionController.get()).addingToSession("postcode" -> postcode)
       )

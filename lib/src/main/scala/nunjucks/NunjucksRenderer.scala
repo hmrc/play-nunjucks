@@ -1,80 +1,119 @@
 package nunjucks
 
-import akka.actor.SupervisorStrategy.{Escalate, Restart}
-import akka.actor.{ActorSystem, OneForOneStrategy, Props, SupervisorStrategy}
-import akka.pattern.ask
-import akka.routing.FromConfig
-import akka.util.Timeout
+
+import java.nio.file.Files
+
+import better.files.File
+import io.apigee.trireme.core.NodeModule
 import javax.inject.{Inject, Singleton}
-import play.api.i18n.Messages
-import play.api.inject.ApplicationLifecycle
-import play.api.libs.json.OWrites
+import org.mozilla.javascript.json.JsonParser
+import org.mozilla.javascript.{Context, Function => JFunction}
+import org.webjars.WebJarExtractor
+import play.api.i18n.MessagesApi
+import play.api.libs.json.{JsObject, Json, OWrites}
 import play.api.mvc.RequestHeader
-import play.api.{Configuration, Environment, Logger}
+import play.api.{Configuration, Environment}
 import play.twirl.api.Html
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.Try
-import scala.util.control.NonFatal
-
 
 @Singleton
 class NunjucksRenderer @Inject() (
-                                   environment: Environment,
+                                   setup: NunjucksSetup,
                                    configuration: Configuration,
-                                   lifecycle: ApplicationLifecycle,
-                                   njkContext: NunjucksContext,
-                                   routesHelper: NunjucksRoutesHelper,
-                                   playEC: ExecutionContext
+                                   environment: Environment,
+                                   reverseRoutes: NunjucksRoutesHelper,
+                                   messagesApi: MessagesApi
                                  ) {
 
-  private val logger = Logger(this.getClass)
+  private val (scope, render) = {
 
-  private val actorSystem: ActorSystem = {
+    val customModules: Map[String, NodeModule] = Map(
+      NunjucksBootstrapModule.moduleName -> new NunjucksBootstrapModule(),
+      NunjucksLoaderModule.moduleName    -> new NunjucksLoaderModule(),
+      NunjucksHelperModule.moduleName    -> new NunjucksHelperModule()
+    )
 
-    val akkaConfiguration = configuration.get[Configuration]("nunjucks").underlying
+    val env = new PlayNodeEnvironment(customModules)
+    env.setDefaultNodeVersion("0.12")
 
-    ActorSystem("nunjucks", akkaConfiguration, environment.classLoader)
-  }
+    val script = env.createScript("[eval]", setup.script.toJava, Array(setup.libDir.pathAsString))
 
-  lifecycle.addStopHook(() => actorSystem.terminate())
+    val scope = {
 
-  private val nunjucksEC: ExecutionContext = actorSystem.dispatcher
+      val context = env.getContextFactory.enterContext()
+      val scope = context.initSafeStandardObjects(null, true)
+      scope.sealObject()
+      Context.exit()
 
-  private implicit lazy val timeout: Timeout = njkContext.timeout
-
-  private val actor = {
-
-    val restartStrategy: SupervisorStrategy = OneForOneStrategy() {
-      case _: ExceptionInInitializerError => Escalate
-      case NonFatal(_)                    => Restart
-      case _                              => Escalate
+      scope
     }
 
-    val actor = FromConfig(supervisorStrategy = restartStrategy)
-      .props(Props(new NunjucksActor(routesHelper, njkContext, nunjucksEC)))
-    actorSystem.actorOf(actor, "nunjucks-actor")
+    val render = script.execute().getModuleResult().asInstanceOf[JFunction]
+
+    (scope, render)
   }
 
-  def renderAsync[A](view: String, context: A)(implicit messages: Messages, request: RequestHeader, writes: OWrites[A]): Future[Html] = {
+  def render(template: String, ctx: JsObject)(implicit request: RequestHeader): Try[Html] = {
 
-    val json = writes.writes(context)
+    val context = Context.enter()
 
-    (actor ? NunjucksActor.Render(view, json, messages, request))
-      .mapTo[Try[String]]
-      .flatMap {
-        result =>
-          Future.fromTry(result.map(Html(_)))
-      }(playEC)
+    val result = Try {
+
+      context.putThreadLocal("configuration", configuration)
+      context.putThreadLocal("environment", environment)
+      context.putThreadLocal("messagesApi", messagesApi)
+      context.putThreadLocal("reverseRoutes", reverseRoutes)
+      context.putThreadLocal("request", request)
+
+      val obj = new JsonParser(context, scope).parseValue(Json.stringify(ctx))
+
+      render.call(context, scope, null, Array(template, obj)).asInstanceOf[String]
+    }
+
+    context.removeThreadLocal("configuration")
+    context.removeThreadLocal("environment")
+    context.removeThreadLocal("messagesApi")
+    context.removeThreadLocal("reverseRoutes")
+    context.removeThreadLocal("request")
+
+    Context.exit()
+
+    result.map(Html.apply)
   }
 
-  def render[A](
-                view: String,
-                context: A,
-                timeout: FiniteDuration = njkContext.timeout
-               )(implicit messages: Messages, request: RequestHeader, writes: OWrites[A]): Html = {
+  def render(template: String)(implicit request: RequestHeader): Try[Html] =
+    render(template, Json.obj())
 
-    Await.result(renderAsync(view, context), timeout)
+  def render[A](template: String, ctx: A)(implicit request: RequestHeader, writes: OWrites[A]): Try[Html] =
+    render(template, writes.writes(ctx))
+}
+
+@Singleton
+class NunjucksSetup @Inject() (
+                                configuration: Configuration,
+                                environment: Environment
+                              ) {
+
+  val (nodeModulesDir, workingDir, script, libDir) = {
+
+    val tmpDir = File.newTemporaryDirectory("nunjucks").deleteOnExit()
+
+    val nodeModulesTarName = "nodeModules.tar"
+    val tarStream = environment.resourceAsStream(nodeModulesTarName).get
+    val nodeModulesTar = File(tmpDir.path) / nodeModulesTarName
+    val nodeModulesDir = tmpDir / "node_modules"
+    Files.copy(tarStream, nodeModulesTar.path)
+    nodeModulesTar.unzipTo(tmpDir)
+    Files.delete(nodeModulesTar.path)
+
+    val scriptFile = File(tmpDir.path) / "nunjucks-bootstrap.js"
+    Files.copy(environment.resourceAsStream("nunjucks/nunjucks-bootstrap.js").get, scriptFile.path)
+
+    val libDir = tmpDir / "lib"
+    val extractor = new WebJarExtractor(environment.classLoader)
+    extractor.extractAllWebJarsTo(libDir.toJava)
+
+    (nodeModulesDir, tmpDir, scriptFile, libDir)
   }
 }
