@@ -7,15 +7,16 @@ import better.files.File
 import io.apigee.trireme.core.NodeModule
 import javax.inject.{Inject, Singleton}
 import org.mozilla.javascript.json.JsonParser
-import org.mozilla.javascript.{Context, Function => JFunction}
+import org.mozilla.javascript.{Context, JavaScriptException, Function => JFunction}
 import org.webjars.WebJarExtractor
 import play.api.i18n.MessagesApi
 import play.api.libs.json.{JsObject, Json, OWrites}
 import play.api.mvc.RequestHeader
-import play.api.{Configuration, Environment}
+import play.api.{Configuration, Environment, PlayException}
 import play.twirl.api.Html
 
-import scala.util.Try
+import scala.io.Source
+import scala.util.{Failure, Success, Try}
 
 @Singleton
 class NunjucksRenderer @Inject() (
@@ -26,7 +27,7 @@ class NunjucksRenderer @Inject() (
                                    messagesApi: MessagesApi
                                  ) {
 
-  private val (scope, render) = {
+  private val render = {
 
     val customModules: Map[String, NodeModule] = Map(
       NunjucksBootstrapModule.moduleName -> new NunjucksBootstrapModule(),
@@ -39,19 +40,17 @@ class NunjucksRenderer @Inject() (
 
     val script = env.createScript("[eval]", setup.script.toJava, Array(setup.libDir.pathAsString))
 
-    val scope = {
+    script.execute().getModuleResult().asInstanceOf[JFunction]
+  }
 
-      val context = env.getContextFactory.enterContext()
-      val scope = context.initSafeStandardObjects(null, true)
-      scope.sealObject()
-      Context.exit()
+  private val scope = {
 
-      scope
-    }
+    val context = Context.enter()
+    val scope = context.initSafeStandardObjects(null, true)
+    scope.sealObject()
+    Context.exit()
 
-    val render = script.execute().getModuleResult().asInstanceOf[JFunction]
-
-    (scope, render)
+    scope
   }
 
   def render(template: String, ctx: JsObject)(implicit request: RequestHeader): Try[Html] = {
@@ -69,7 +68,7 @@ class NunjucksRenderer @Inject() (
       val obj = new JsonParser(context, scope).parseValue(Json.stringify(ctx))
 
       render.call(context, scope, null, Array(template, obj)).asInstanceOf[String]
-    }
+    }.transform(Success.apply, toPlayException)
 
     context.removeThreadLocal("configuration")
     context.removeThreadLocal("environment")
@@ -87,6 +86,45 @@ class NunjucksRenderer @Inject() (
 
   def render[A](template: String, ctx: A)(implicit request: RequestHeader, writes: OWrites[A]): Try[Html] =
     render(template, writes.writes(ctx))
+
+  private val TemplateError = """Template render error: \((.*)\) \[Line (\d+), Column (\d+)\]""".r
+
+  private def toPlayException[A](e: Throwable): Failure[A] = {
+    Failure {
+      e match {
+        case e: JavaScriptException =>
+
+          val (first, stack) = e.details.splitAt(e.details.indexOf("\n"))
+
+          first match {
+            case TemplateError(file, lpos, cpos) =>
+
+              val viewPaths =
+                "" :: configuration.getOptional[Seq[String]]("nunjucks.viewPaths").getOrElse(Seq.empty).toList
+
+              val source = viewPaths.flatMap(path => environment.resourceAsStream(s"$path/$file"))
+                .headOption
+                .map(Source.fromInputStream)
+                .map(_.mkString)
+                .getOrElse("")
+
+              new PlayException.ExceptionSource("Nunjucks Exception", stack.trim) {
+
+                override def line(): Integer = lpos.toInt
+
+                override def position(): Integer = cpos.toInt
+
+                override def input(): String = source
+
+                override def sourceName(): String = file
+              }
+            case _ =>
+              e
+          }
+        case e => e
+      }
+    }
+  }
 }
 
 @Singleton
