@@ -41,7 +41,7 @@ object NunjucksBootstrapModuleImpl {
   @JSFunction
   def setReturnValue(cx: Context, thisObj: Scriptable, args: Array[AnyRef], func: JFunction): Unit = {
     val self = thisObj.asInstanceOf[NunjucksBootstrapModuleImpl]
-    val returnValue = objArg(args, 0, classOf[Scriptable], true)
+    val returnValue = objArg(cx, thisObj, args, 0, classOf[Scriptable], true)
     self.future.setModuleResult(returnValue)
   }
 }

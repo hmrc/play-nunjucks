@@ -16,22 +16,18 @@ lazy val root = (project in file("."))
     }
   )
 
-lazy val commonSettings = Seq(
-  organization := "uk.gov.hmrc",
-  scalacOptions ++= Seq(
-    "-Xfatal-warnings",
-    "-deprecation"
-  )
-)
-
 lazy val lib = (project in file("lib"))
   .enablePlugins(SbtWeb)
   .settings(
     version := libraryVersion,
     scalaVersion := "2.11.12",
-    name := "play-uk.gov.hmrc.nunjucks",
+    name := "play-nunjucks-spike",
+    organization := "uk.gov.hmrc",
     version := libraryVersion,
-    scalaVersion := "2.11.12",
+    scalacOptions ++= Seq(
+      "-Xfatal-warnings",
+      "-deprecation"
+    ),
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play" % PlayVersion.current % "test, provided",
       "com.typesafe.play" %% "play-test" % PlayVersion.current % "test",
@@ -58,10 +54,14 @@ lazy val lib = (project in file("lib"))
 lazy val itServer = (project in file("it-server"))
   .enablePlugins(PlayScala, SbtWeb)
   .dependsOn(lib)
-  .settings(commonSettings)
   .settings(
     name := "it-server",
+    organization := "uk.gov.hmrc",
     scalaVersion := "2.11.12",
+    scalacOptions ++= Seq(
+      "-Xfatal-warnings",
+      "-deprecation"
+    ),
     libraryDependencies ++= Seq(
       guice,
       "org.webjars.npm" % "govuk-frontend" % "1.0.0",
