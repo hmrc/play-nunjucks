@@ -5,7 +5,6 @@ import org.mozilla.javascript.annotations.JSFunction
 import org.mozilla.javascript.{Context, Scriptable, ScriptableObject}
 import play.api.{Configuration, Environment}
 
-import scala.collection.mutable
 import scala.io.Source
 
 class NunjucksLoaderModule extends NodeModule {
@@ -25,7 +24,7 @@ object NunjucksLoaderModule {
 
 class NunjucksLoader extends ScriptableObject {
 
-  private def viewPaths: mutable.Seq[String] = {
+  private def viewPaths: Seq[String] = {
 
     val context = Context.getCurrentContext
 
@@ -33,7 +32,7 @@ class NunjucksLoader extends ScriptableObject {
       context.getThreadLocal("configuration")
         .asInstanceOf[Configuration]
 
-    mutable.Seq("") ++ configuration
+    configuration
       .getOptional[Seq[String]]("nunjucks.viewPaths")
       .getOrElse(Seq.empty)
   }
