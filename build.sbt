@@ -1,11 +1,11 @@
 import play.core.PlayVersion
 
-lazy val libraryVersion = "0.1.0-SNAPSHOT"
-
-lazy val j2v8Version = "4.6.0"
+lazy val majorVersionNumber = 0
 
 lazy val root = (project in file("."))
+  .disablePlugins(SbtAutoBuildPlugin, SbtArtifactory)
   .settings(
+    majorVersion := majorVersionNumber,
     parallelExecution in Test := false,
     test := {
       (test in(lib.project, Test)).value
@@ -17,14 +17,14 @@ lazy val root = (project in file("."))
   )
 
 lazy val lib = (project in file("lib"))
-  .enablePlugins(SbtWeb)
+  .enablePlugins(SbtWeb, SbtAutoBuildPlugin, SbtGitVersioning, SbtArtifactory)
   .settings(inConfig(Test)(testSettings): _*)
   .settings(
-    version := libraryVersion,
     scalaVersion := "2.11.12",
     name := "play-nunjucks-spike",
     organization := "uk.gov.hmrc",
-    version := libraryVersion,
+    majorVersion := majorVersionNumber,
+    makePublicallyAvailableOnBintray := false,
     scalacOptions ++= Seq(
       "-Xfatal-warnings",
       "-deprecation"
@@ -58,6 +58,7 @@ lazy val itServer = (project in file("it-server"))
   .settings(inConfig(Test)(testSettings): _*)
   .settings(
     name := "it-server",
+    majorVersion := majorVersionNumber,
     organization := "uk.gov.hmrc",
     scalaVersion := "2.11.12",
     scalacOptions ++= Seq(
