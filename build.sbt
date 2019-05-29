@@ -18,6 +18,7 @@ lazy val root = (project in file("."))
 
 lazy val lib = (project in file("lib"))
   .enablePlugins(SbtWeb)
+  .settings(inConfig(Test)(testSettings): _*)
   .settings(
     version := libraryVersion,
     scalaVersion := "2.11.12",
@@ -54,6 +55,7 @@ lazy val lib = (project in file("lib"))
 lazy val itServer = (project in file("it-server"))
   .enablePlugins(PlayScala, SbtWeb)
   .dependsOn(lib)
+  .settings(inConfig(Test)(testSettings): _*)
   .settings(
     name := "it-server",
     organization := "uk.gov.hmrc",
@@ -75,3 +77,13 @@ lazy val itServer = (project in file("it-server"))
     ),
     pipelineStages in Assets := Seq(concat, uglify)
   )
+
+lazy val testSettings: Seq[Def.Setting[_]] = Seq(
+  fork        := true,
+  javaOptions ++= Seq(
+    "-Dconfig.resource=test.application.conf"
+  ),
+  unmanagedSourceDirectories ++= Seq(
+    baseDirectory.value / "test-utils"
+  )
+)
