@@ -1,4 +1,4 @@
-package nunjucks
+package uk.gov.hmrc.nunjucks
 
 import play.api.{Configuration, Environment, Mode}
 import play.api.inject.{Binding, Module}

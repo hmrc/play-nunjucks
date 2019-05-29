@@ -1,4 +1,4 @@
-package nunjucks
+package uk.gov.hmrc.nunjucks
 
 
 import java.nio.file.Files
@@ -154,7 +154,7 @@ class NunjucksSetup @Inject() (
     Files.delete(nodeModulesTar.path)
 
     val scriptFile = File(tmpDir.path) / "nunjucks-bootstrap.js"
-    Files.copy(environment.resourceAsStream("nunjucks/nunjucks-bootstrap.js").get, scriptFile.path)
+    Files.copy(environment.resourceAsStream("uk/gov/hmrc/nunjucks/nunjucks-bootstrap.js").get, scriptFile.path)
 
     val libDir = tmpDir / "lib"
     val extractor = new WebJarExtractor(environment.classLoader)

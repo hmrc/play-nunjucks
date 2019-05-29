@@ -29,7 +29,7 @@ lazy val lib = (project in file("lib"))
   .settings(
     version := libraryVersion,
     scalaVersion := "2.11.12",
-    name := "play-nunjucks",
+    name := "play-uk.gov.hmrc.nunjucks",
     version := libraryVersion,
     scalaVersion := "2.11.12",
     libraryDependencies ++= Seq(

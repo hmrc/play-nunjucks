@@ -1,4 +1,4 @@
-package nunjucks
+package uk.gov.hmrc.nunjucks
 
 import io.apigee.trireme.core.{ArgUtils, NodeModule, NodeRuntime}
 import org.mozilla.javascript.annotations.{JSFunction, JSGetter}

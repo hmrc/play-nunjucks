@@ -1,4 +1,4 @@
-package nunjucks
+package uk.gov.hmrc.nunjucks
 
 import java.net.{URL, URLClassLoader}
 

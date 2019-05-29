@@ -1,7 +1,7 @@
 package controllers
 
 import javax.inject.{Inject, Singleton}
-import nunjucks.{NunjucksRenderer, NunjucksSupport}
+import uk.gov.hmrc.nunjucks.{NunjucksRenderer, NunjucksSupport}
 import play.api.data.{Form, Forms}
 import play.api.i18n.I18nSupport
 import play.api.libs.json.Json

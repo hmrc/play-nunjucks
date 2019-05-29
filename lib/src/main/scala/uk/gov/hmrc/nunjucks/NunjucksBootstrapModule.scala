@@ -1,4 +1,4 @@
-package nunjucks
+package uk.gov.hmrc.nunjucks
 
 import io.apigee.trireme.core.ArgUtils._
 import io.apigee.trireme.core.internal.ScriptRunner

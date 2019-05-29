@@ -1,6 +1,6 @@
-# play-nunjucks-spike
+# play-uk.gov.hmrc.nunjucks-spike
 
-This is a library which enables the use of [Nunjucks](https://mozilla.github.io/nunjucks/)
+This is a library which enables the use of [Nunjucks](https://mozilla.github.io/uk.gov.hmrc.nunjucks/)
 templates in a [Play!](https://www.playframework.com/) web application.
 
 ## Installation
@@ -17,7 +17,7 @@ Once you have done this you can include it in a local project
 by adding the following to your `build.sbt` file:
 
 ```scala
-libraryDependencies += "uk.gov.hmrc" %% "play-nunjucks-spike" % "0.1.0-SNAPSHOT"
+libraryDependencies += "uk.gov.hmrc" %% uk.govuk.gov.hmrc.nunjucksnjucks % "0.1.0-SNAPSHOT"
 ```
 
 ## Usage
@@ -90,7 +90,7 @@ The output json will be the following:
 
 There are some features of Play! that are really useful to be
 able to access in views so we've added some helper methods 
-that are available to all nunjucks templates.
+that are available to all nuk.gov.hmrc.nunjuckstemplates.
 
 ##### Messages Helper
 
@@ -98,8 +98,7 @@ Play's i18n support is provided through the `Messages` object.
 We have added a `messages()` function which delegates to this
 object. For example:
 
-```nunjucks
-<h1>{{ messages("my.messages.key", "some argument") }}</h1>
+```nuk.gov.hmrc.nunjucks<h1>{{ messages("my.messages.key", "some argument") }}</h1>
 ```
 
 ##### Routes helper
@@ -111,8 +110,7 @@ need to change that reference everywhere in code.
 We use Play's `JavaScriptReverseRouter` and make this available
 globally under the `routes` object in Nunjucks templates. For example:
 
-```nunjucks
-<a href="{{ routes.controllers.MyController.myEndpoint().url }}">my link</a>
+```nuk.gov.hmrc.nunjucks<a href="{{ routes.controllers.MyController.myEndpoint().url }}">my link</a>
 ```
 
 ##### CSRF Helper
@@ -123,8 +121,7 @@ CSRF token included in the form payload. We provide a `csrf()`
 method which will output a hidden form field with the CSRF
 token as a value. For example:
 
-```nunjucks
-<form method="post">
+```nuk.gov.hmrc.nunjucks<form method="post">
 
   {{ csrf() | safe }}
   
@@ -144,16 +141,15 @@ contents is visible to the application on start. In order to
 include something from a dependent library you can use the
 following:
 
-```nunjucks
-{% from "some-web-jar/some/path" import myComponent %}
+```nuk.gov.hmrc.nunjucks{% from "some-web-jar/some/path" import myComponent %}
 ```
 
 ### Configuration
 
-- `nunjucks.viewPaths` is a list of resource directories to search
+- `nuk.gov.hmrc.nunjucksviewPaths` is a list of resource directories to search
 for views. By default this is just `views` which means only files in
-`conf/views` will be treated as nunjucks sources.
+`conf/views` will be treated as nuk.gov.hmrc.nunjuckssources.
 
-- `nunjucks.libPaths` is a list of directories to search
+- `nuk.gov.hmrc.nunjuckslibPaths` is a list of directories to search
 for webjar libraries. It's useful to set this if you don't want to
 specify a deep nested path for each component from a library.

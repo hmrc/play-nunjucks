@@ -1,4 +1,4 @@
-package nunjucks
+package uk.gov.hmrc.nunjucks
 
 import play.api.data.Form
 import play.api.i18n.Messages

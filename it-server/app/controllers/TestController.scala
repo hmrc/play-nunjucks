@@ -1,7 +1,7 @@
 package controllers
 
 import javax.inject.Inject
-import nunjucks.{NunjucksRenderer, NunjucksSupport}
+import uk.gov.hmrc.nunjucks.{NunjucksRenderer, NunjucksSupport}
 import play.api.Environment
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
