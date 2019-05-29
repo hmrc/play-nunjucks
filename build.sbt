@@ -5,6 +5,7 @@ lazy val majorVersionNumber = 0
 lazy val root = (project in file("."))
   .disablePlugins(SbtAutoBuildPlugin, SbtArtifactory)
   .settings(
+    crossScalaVersions := Seq("2.11.12"),
     majorVersion := majorVersionNumber,
     parallelExecution in Test := false,
     test := {
@@ -22,17 +23,9 @@ lazy val root = (project in file("."))
 lazy val lib = (project in file("lib"))
   .enablePlugins(SbtWeb, SbtAutoBuildPlugin, SbtGitVersioning, SbtArtifactory)
   .settings(inConfig(Test)(testSettings): _*)
+  .settings(commonSettings: _*)
   .settings(
-    scalaVersion := "2.11.12",
     name := "play-nunjucks-spike",
-    organization := "uk.gov.hmrc",
-    majorVersion := majorVersionNumber,
-    makePublicallyAvailableOnBintray := false,
-    scalacOptions ++= Seq(
-      "-Xfatal-warnings",
-      "-deprecation"
-    ),
-    resolvers ++= sharedResolvers,
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play" % PlayVersion.current % "test, provided",
       "com.typesafe.play" %% "play-test" % PlayVersion.current % "test",
@@ -42,6 +35,7 @@ lazy val lib = (project in file("lib"))
       "org.scalatest" %% "scalatest" % "3.0.7" % "test",
       "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
       "org.scalamock" %% "scalamock" % "4.1.0" % "test",
+      "org.pegdown" % "pegdown" % "1.6.0" % "test",
       "io.apigee.trireme" % "trireme-core" % "0.9.4",
       "io.apigee.trireme" % "trireme-kernel" % "0.9.4",
       "io.apigee.trireme" % "trireme-node12src" % "0.9.4",
@@ -60,22 +54,16 @@ lazy val itServer = (project in file("it-server"))
   .enablePlugins(PlayScala, SbtWeb)
   .dependsOn(lib)
   .settings(inConfig(Test)(testSettings): _*)
+  .settings(commonSettings: _*)
   .settings(
     name := "it-server",
-    majorVersion := majorVersionNumber,
-    organization := "uk.gov.hmrc",
-    scalaVersion := "2.11.12",
-    scalacOptions ++= Seq(
-      "-Xfatal-warnings",
-      "-deprecation"
-    ),
-    resolvers ++= sharedResolvers,
     libraryDependencies ++= Seq(
       guice,
       "org.webjars.npm" % "govuk-frontend" % "1.0.0",
       "org.scalactic" %% "scalactic" % "3.0.7" % "test",
       "org.scalatest" %% "scalatest" % "3.0.7" % "test",
       "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
+      "org.pegdown" % "pegdown" % "1.6.0" % "test",
       "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1" % "test"
     ),
     Concat.groups := Seq(
@@ -94,10 +82,21 @@ lazy val testSettings: Seq[Def.Setting[_]] = Seq(
   )
 )
 
-lazy val sharedResolvers: Seq[MavenRepository] = Seq(
-  Resolver.bintrayRepo("hmrc", "releases"),
-  Resolver.bintrayRepo("hmrc", "snapshots"),
-  Resolver.bintrayRepo("hmrc", "release-candidates"),
-  Resolver.typesafeRepo("releases"),
-  Resolver.jcenterRepo
+lazy val commonSettings: Seq[Def.Setting[_]] = Seq(
+  organization := "uk.gov.hmrc",
+  majorVersion := majorVersionNumber,
+  makePublicallyAvailableOnBintray := false,
+  scalaVersion := "2.11.12",
+  crossScalaVersions := Seq("2.11.12"),
+  scalacOptions ++= Seq(
+    "-Xfatal-warnings",
+    "-deprecation"
+  ),
+  resolvers ++= Seq(
+    Resolver.bintrayRepo("hmrc", "releases"),
+    Resolver.bintrayRepo("hmrc", "snapshots"),
+    Resolver.bintrayRepo("hmrc", "release-candidates"),
+    Resolver.typesafeRepo("releases"),
+    Resolver.jcenterRepo
+  )
 )
