@@ -32,10 +32,7 @@ lazy val lib = (project in file("lib"))
       "-Xfatal-warnings",
       "-deprecation"
     ),
-    resolvers ++= Seq(
-      Resolver.typesafeRepo("releases"),
-      Resolver.jcenterRepo
-    ),
+    resolvers ++= sharedResolvers,
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play" % PlayVersion.current % "test, provided",
       "com.typesafe.play" %% "play-test" % PlayVersion.current % "test",
@@ -72,10 +69,7 @@ lazy val itServer = (project in file("it-server"))
       "-Xfatal-warnings",
       "-deprecation"
     ),
-    resolvers ++= Seq(
-      Resolver.typesafeRepo("releases"),
-      Resolver.jcenterRepo
-    ),
+    resolvers ++= sharedResolvers,
     libraryDependencies ++= Seq(
       guice,
       "org.webjars.npm" % "govuk-frontend" % "1.0.0",
@@ -98,4 +92,12 @@ lazy val testSettings: Seq[Def.Setting[_]] = Seq(
   unmanagedSourceDirectories ++= Seq(
     baseDirectory.value / "test-utils"
   )
+)
+
+lazy val sharedResolvers: Seq[MavenRepository] = Seq(
+  Resolver.bintrayRepo("hmrc", "releases"),
+  Resolver.bintrayRepo("hmrc", "snapshots"),
+  Resolver.bintrayRepo("hmrc", "release-candidates"),
+  Resolver.typesafeRepo("releases"),
+  Resolver.jcenterRepo
 )
