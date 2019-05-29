@@ -13,6 +13,9 @@ lazy val root = (project in file("."))
     },
     run := {
       (run in(itServer.project, Compile)).evaluated
+    },
+    publishAndDistribute := {
+      (publishAndDistribute in lib.project).value
     }
   )
 
