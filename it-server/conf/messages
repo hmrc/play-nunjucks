@@ -1,5 +1,3 @@
-foo = what the {0}
-
 site.error-summary = There is a problem
 site.back = Back
 site.continue = Continue

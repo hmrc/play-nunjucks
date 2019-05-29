@@ -38,7 +38,15 @@ class NunjucksRenderer @Inject() (
     val env = new PlayNodeEnvironment(customModules)
     env.setDefaultNodeVersion("0.12")
 
-    val script = env.createScript("[eval]", setup.script.toJava, Array(setup.libDir.pathAsString))
+    val libPaths = ("" :: configuration
+      .getOptional[Seq[String]]("nunjucks.libPaths")
+      .getOrElse(Nil).toList)
+      .map {
+        dir =>
+          (setup.libDir / dir).pathAsString
+      }
+
+    val script = env.createScript("[eval]", setup.script.toJava, libPaths.toArray)
 
     script.execute().getModuleResult().asInstanceOf[JFunction]
   }
