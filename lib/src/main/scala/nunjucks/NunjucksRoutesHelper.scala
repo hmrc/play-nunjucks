@@ -16,8 +16,6 @@ trait NunjucksRoutesHelper {
 @Singleton
 class ProductionNunjucksRoutesHelper @Inject() extends NunjucksRoutesHelper {
 
-  private val logger = Logger(getClass)
-
   lazy val routes: Seq[JavaScriptReverseRoute] = {
 
     Package.getPackages
@@ -34,7 +32,6 @@ class ProductionNunjucksRoutesHelper @Inject() extends NunjucksRoutesHelper {
             _.getReturnType == classOf[JavaScriptReverseRoute]
           }.map {
             method =>
-              logger.info(s"route: $method")
               method.invoke(instance).asInstanceOf[JavaScriptReverseRoute]
           }
       }
@@ -42,8 +39,6 @@ class ProductionNunjucksRoutesHelper @Inject() extends NunjucksRoutesHelper {
 }
 
 class DevelopmentNunjucksRoutesHelper @Inject() (environment: Environment) extends NunjucksRoutesHelper {
-
-  private val logger = Logger(getClass)
 
   override def routes: Seq[JavaScriptReverseRoute] = {
 
@@ -67,7 +62,6 @@ class DevelopmentNunjucksRoutesHelper @Inject() (environment: Environment) exten
             _.getReturnType == classOf[JavaScriptReverseRoute]
           }.map {
             method =>
-              logger.info(s"route: $method")
               method.invoke(instance).asInstanceOf[JavaScriptReverseRoute]
           }
       }

@@ -1,80 +1,165 @@
 package nunjucks
 
-import akka.actor.SupervisorStrategy.{Escalate, Restart}
-import akka.actor.{ActorSystem, OneForOneStrategy, Props, SupervisorStrategy}
-import akka.pattern.ask
-import akka.routing.FromConfig
-import akka.util.Timeout
+
+import java.nio.file.Files
+
+import better.files.File
+import io.apigee.trireme.core.NodeModule
 import javax.inject.{Inject, Singleton}
-import play.api.i18n.Messages
-import play.api.inject.ApplicationLifecycle
-import play.api.libs.json.OWrites
+import org.mozilla.javascript.json.JsonParser
+import org.mozilla.javascript.{Context, JavaScriptException, Function => JFunction}
+import org.webjars.WebJarExtractor
+import play.api.i18n.MessagesApi
+import play.api.libs.json.{JsObject, Json, OWrites}
 import play.api.mvc.RequestHeader
-import play.api.{Configuration, Environment, Logger}
+import play.api.{Configuration, Environment, PlayException}
 import play.twirl.api.Html
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.util.Try
-import scala.util.control.NonFatal
-
+import scala.io.Source
+import scala.util.{Failure, Success, Try}
 
 @Singleton
 class NunjucksRenderer @Inject() (
-                                   environment: Environment,
+                                   setup: NunjucksSetup,
                                    configuration: Configuration,
-                                   lifecycle: ApplicationLifecycle,
-                                   njkContext: NunjucksContext,
-                                   routesHelper: NunjucksRoutesHelper,
-                                   playEC: ExecutionContext
+                                   environment: Environment,
+                                   reverseRoutes: NunjucksRoutesHelper,
+                                   messagesApi: MessagesApi
                                  ) {
 
-  private val logger = Logger(this.getClass)
+  private val render = {
 
-  private val actorSystem: ActorSystem = {
+    val customModules: Map[String, NodeModule] = Map(
+      NunjucksBootstrapModule.moduleName -> new NunjucksBootstrapModule(),
+      NunjucksLoaderModule.moduleName    -> new NunjucksLoaderModule(),
+      NunjucksHelperModule.moduleName    -> new NunjucksHelperModule()
+    )
 
-    val akkaConfiguration = configuration.get[Configuration]("nunjucks").underlying
+    val env = new PlayNodeEnvironment(customModules)
+    env.setDefaultNodeVersion("0.12")
 
-    ActorSystem("nunjucks", akkaConfiguration, environment.classLoader)
+    val libPaths = ("" :: configuration
+      .getOptional[Seq[String]]("nunjucks.libPaths")
+      .getOrElse(Nil).toList)
+      .map {
+        dir =>
+          (setup.libDir / dir).pathAsString
+      }
+
+    val script = env.createScript("[eval]", setup.script.toJava, libPaths.toArray)
+
+    script.execute().getModuleResult().asInstanceOf[JFunction]
   }
 
-  lifecycle.addStopHook(() => actorSystem.terminate())
+  private val scope = {
 
-  private val nunjucksEC: ExecutionContext = actorSystem.dispatcher
+    val context = Context.enter()
+    val scope = context.initSafeStandardObjects(null, true)
+    scope.sealObject()
+    Context.exit()
 
-  private implicit lazy val timeout: Timeout = njkContext.timeout
+    scope
+  }
 
-  private val actor = {
+  def render(template: String, ctx: JsObject)(implicit request: RequestHeader): Try[Html] = {
 
-    val restartStrategy: SupervisorStrategy = OneForOneStrategy() {
-      case _: ExceptionInInitializerError => Escalate
-      case NonFatal(_)                    => Restart
-      case _                              => Escalate
+    val context = Context.enter()
+
+    val result = Try {
+
+      context.putThreadLocal("configuration", configuration)
+      context.putThreadLocal("environment", environment)
+      context.putThreadLocal("messagesApi", messagesApi)
+      context.putThreadLocal("reverseRoutes", reverseRoutes)
+      context.putThreadLocal("request", request)
+
+      val obj = new JsonParser(context, scope).parseValue(Json.stringify(ctx))
+
+      render.call(context, scope, null, Array(template, obj)).asInstanceOf[String]
+    }.transform(Success.apply, toPlayException)
+
+    context.removeThreadLocal("configuration")
+    context.removeThreadLocal("environment")
+    context.removeThreadLocal("messagesApi")
+    context.removeThreadLocal("reverseRoutes")
+    context.removeThreadLocal("request")
+
+    Context.exit()
+
+    result.map(Html.apply)
+  }
+
+  def render(template: String)(implicit request: RequestHeader): Try[Html] =
+    render(template, Json.obj())
+
+  def render[A](template: String, ctx: A)(implicit request: RequestHeader, writes: OWrites[A]): Try[Html] =
+    render(template, writes.writes(ctx))
+
+  private val TemplateError = """Template render error: \((.*)\) \[Line (\d+), Column (\d+)\]""".r
+
+  private def toPlayException[A](e: Throwable): Failure[A] = {
+    Failure {
+      e match {
+        case e: JavaScriptException =>
+
+          val (first, stack) = e.details.splitAt(e.details.indexOf("\n"))
+
+          first match {
+            case TemplateError(file, lpos, cpos) =>
+
+              val viewPaths =
+                "" :: configuration.getOptional[Seq[String]]("nunjucks.viewPaths").getOrElse(Seq.empty).toList
+
+              val source = viewPaths.flatMap(path => environment.resourceAsStream(s"$path/$file"))
+                .headOption
+                .map(Source.fromInputStream)
+                .map(_.mkString)
+                .getOrElse("")
+
+              new PlayException.ExceptionSource("Nunjucks Exception", stack.trim) {
+
+                override def line(): Integer = lpos.toInt
+
+                override def position(): Integer = cpos.toInt
+
+                override def input(): String = source
+
+                override def sourceName(): String = file
+              }
+            case _ =>
+              e
+          }
+        case e => e
+      }
     }
-
-    val actor = FromConfig(supervisorStrategy = restartStrategy)
-      .props(Props(new NunjucksActor(routesHelper, njkContext, nunjucksEC)))
-    actorSystem.actorOf(actor, "nunjucks-actor")
   }
+}
 
-  def renderAsync[A](view: String, context: A)(implicit messages: Messages, request: RequestHeader, writes: OWrites[A]): Future[Html] = {
+@Singleton
+class NunjucksSetup @Inject() (
+                                configuration: Configuration,
+                                environment: Environment
+                              ) {
 
-    val json = writes.writes(context)
+  val (nodeModulesDir, workingDir, script, libDir) = {
 
-    (actor ? NunjucksActor.Render(view, json, messages, request))
-      .mapTo[Try[String]]
-      .flatMap {
-        result =>
-          Future.fromTry(result.map(Html(_)))
-      }(playEC)
-  }
+    val tmpDir = File.newTemporaryDirectory("nunjucks").deleteOnExit()
 
-  def render[A](
-                view: String,
-                context: A,
-                timeout: FiniteDuration = njkContext.timeout
-               )(implicit messages: Messages, request: RequestHeader, writes: OWrites[A]): Html = {
+    val nodeModulesTarName = "nodeModules.tar"
+    val tarStream = environment.resourceAsStream(nodeModulesTarName).get
+    val nodeModulesTar = File(tmpDir.path) / nodeModulesTarName
+    val nodeModulesDir = tmpDir / "node_modules"
+    Files.copy(tarStream, nodeModulesTar.path)
+    nodeModulesTar.unzipTo(tmpDir)
+    Files.delete(nodeModulesTar.path)
 
-    Await.result(renderAsync(view, context), timeout)
+    val scriptFile = File(tmpDir.path) / "nunjucks-bootstrap.js"
+    Files.copy(environment.resourceAsStream("nunjucks/nunjucks-bootstrap.js").get, scriptFile.path)
+
+    val libDir = tmpDir / "lib"
+    val extractor = new WebJarExtractor(environment.classLoader)
+    extractor.extractAllWebJarsTo(libDir.toJava)
+
+    (nodeModulesDir, tmpDir, scriptFile, libDir)
   }
 }
