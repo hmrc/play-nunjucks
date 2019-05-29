@@ -32,6 +32,10 @@ lazy val lib = (project in file("lib"))
       "-Xfatal-warnings",
       "-deprecation"
     ),
+    resolvers ++= Seq(
+      Resolver.typesafeRepo("releases"),
+      Resolver.jcenterRepo
+    ),
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play" % PlayVersion.current % "test, provided",
       "com.typesafe.play" %% "play-test" % PlayVersion.current % "test",
@@ -67,6 +71,10 @@ lazy val itServer = (project in file("it-server"))
     scalacOptions ++= Seq(
       "-Xfatal-warnings",
       "-deprecation"
+    ),
+    resolvers ++= Seq(
+      Resolver.typesafeRepo("releases"),
+      Resolver.jcenterRepo
     ),
     libraryDependencies ++= Seq(
       guice,
