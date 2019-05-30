@@ -9,7 +9,7 @@ __Currently this is an investigation and is not published to an external reposit
 
 To publish the library locally, clone this repository and run:
 
-```$bash
+```bash
 sbt lib/publishLocal
 ```
 
@@ -98,7 +98,8 @@ Play's i18n support is provided through the `Messages` object.
 We have added a `messages()` function which delegates to this
 object. For example:
 
-```nuk.gov.hmrc.nunjucks<h1>{{ messages("my.messages.key", "some argument") }}</h1>
+```nunjucks
+<h1>{{ messages("my.messages.key", "some argument") }}</h1>
 ```
 
 ##### Routes helper
@@ -110,7 +111,8 @@ need to change that reference everywhere in code.
 We use Play's `JavaScriptReverseRouter` and make this available
 globally under the `routes` object in Nunjucks templates. For example:
 
-```nuk.gov.hmrc.nunjucks<a href="{{ routes.controllers.MyController.myEndpoint().url }}">my link</a>
+```nunjucks
+<a href="{{ routes.controllers.MyController.myEndpoint().url }}">my link</a>
 ```
 
 ##### CSRF Helper
@@ -121,7 +123,8 @@ CSRF token included in the form payload. We provide a `csrf()`
 method which will output a hidden form field with the CSRF
 token as a value. For example:
 
-```nuk.gov.hmrc.nunjucks<form method="post">
+```nunjucks
+<form method="post">
 
   {{ csrf() | safe }}
   
@@ -141,15 +144,16 @@ contents is visible to the application on start. In order to
 include something from a dependent library you can use the
 following:
 
-```nuk.gov.hmrc.nunjucks{% from "some-web-jar/some/path" import myComponent %}
+```nunjucks
+{% from "some-web-jar/some/path" import myComponent %}
 ```
 
 ### Configuration
 
-- `nuk.gov.hmrc.nunjucksviewPaths` is a list of resource directories to search
+- `nunjucks.viewPaths` is a list of resource directories to search
 for views. By default this is just `views` which means only files in
 `conf/views` will be treated as nuk.gov.hmrc.nunjuckssources.
 
-- `nuk.gov.hmrc.nunjuckslibPaths` is a list of directories to search
+- `nunjucks.libPaths` is a list of directories to search
 for webjar libraries. It's useful to set this if you don't want to
 specify a deep nested path for each component from a library.
