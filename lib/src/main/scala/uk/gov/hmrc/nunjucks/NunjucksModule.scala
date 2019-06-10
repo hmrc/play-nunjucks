@@ -8,6 +8,7 @@ class NunjucksModule extends Module {
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] =
     Seq(
       bind[NunjucksRenderer].toSelf.eagerly,
+      bind[NunjucksConfiguration].toProvider[NunjucksConfigurationProvider],
       bind[NunjucksSetup].toSelf.eagerly,
       if (environment.mode == Mode.Prod) {
         bind[NunjucksRoutesHelper].to[ProductionNunjucksRoutesHelper]

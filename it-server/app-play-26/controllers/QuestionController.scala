@@ -1,14 +1,13 @@
 package controllers
 
 import javax.inject.{Inject, Singleton}
-import uk.gov.hmrc.nunjucks.{NunjucksRenderer, NunjucksSupport}
 import play.api.data.{Form, Forms}
 import play.api.i18n.I18nSupport
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
+import uk.gov.hmrc.nunjucks.{NunjucksRenderer, NunjucksSupport}
 
 import scala.concurrent.ExecutionContext
-
 
 @Singleton
 class QuestionController @Inject() (
