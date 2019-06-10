@@ -7,6 +7,7 @@ lazy val root = (project in file("."))
   .settings(
     crossScalaVersions := Seq("2.11.12"),
     majorVersion := majorVersionNumber,
+    PlayCrossCompilation.rootCrossCompilationSettings,
     parallelExecution in Test := false,
     test := {
       (test in(lib.project, Test)).value

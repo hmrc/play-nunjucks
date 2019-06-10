@@ -20,4 +20,8 @@ object PlayCrossCompilation extends AbstractPlayCrossCompilation(defaultPlayVers
     (unmanagedSourceDirectories in Test) += (baseDirectory.value / s"test-$playDir"),
     (unmanagedResourceDirectories in Test) += (baseDirectory.value / "test" / s"resources-$playDir")
   )
+
+  lazy val rootCrossCompilationSettings: Seq[Def.Setting[_]] = Seq(
+    crossScalaVersions ~= playCrossScalaBuilds
+  )
 }
