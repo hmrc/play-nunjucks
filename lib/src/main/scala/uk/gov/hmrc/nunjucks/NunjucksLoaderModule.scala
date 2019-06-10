@@ -30,11 +30,9 @@ class NunjucksLoader extends ScriptableObject {
 
     val configuration =
       context.getThreadLocal("configuration")
-        .asInstanceOf[Configuration]
+        .asInstanceOf[NunjucksConfiguration]
 
-    configuration
-      .getOptional[Seq[String]]("nunjucks.viewPaths")
-      .getOrElse(Seq.empty)
+    configuration.viewPaths
   }
 
   override def getClassName: String = NunjucksLoader.className

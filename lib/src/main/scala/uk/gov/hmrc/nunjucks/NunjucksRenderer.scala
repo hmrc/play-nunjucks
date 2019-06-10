@@ -12,7 +12,7 @@ import org.webjars.WebJarExtractor
 import play.api.i18n.MessagesApi
 import play.api.libs.json.{JsObject, Json, OWrites}
 import play.api.mvc.RequestHeader
-import play.api.{Configuration, Environment, PlayException}
+import play.api.{Environment, PlayException}
 import play.twirl.api.Html
 
 import scala.io.Source
@@ -21,7 +21,7 @@ import scala.util.{Failure, Success, Try}
 @Singleton
 class NunjucksRenderer @Inject() (
                                    setup: NunjucksSetup,
-                                   configuration: Configuration,
+                                   configuration: NunjucksConfiguration,
                                    environment: Environment,
                                    reverseRoutes: NunjucksRoutesHelper,
                                    messagesApi: MessagesApi
@@ -38,15 +38,7 @@ class NunjucksRenderer @Inject() (
     val env = new PlayNodeEnvironment(customModules)
     env.setDefaultNodeVersion("0.12")
 
-    val libPaths = ("" :: configuration
-      .getOptional[Seq[String]]("nunjucks.libPaths")
-      .getOrElse(Nil).toList)
-      .map {
-        dir =>
-          (setup.libDir / dir).pathAsString
-      }
-
-    val script = env.createScript("[eval]", setup.script.toJava, libPaths.toArray)
+    val script = env.createScript("[eval]", setup.script.toJava, configuration.libPaths.toArray)
 
     script.execute().getModuleResult().asInstanceOf[JFunction]
   }
@@ -107,10 +99,8 @@ class NunjucksRenderer @Inject() (
           first match {
             case TemplateError(file, lpos, cpos) =>
 
-              val viewPaths =
-                "" :: configuration.getOptional[Seq[String]]("nunjucks.viewPaths").getOrElse(Seq.empty).toList
-
-              val source = viewPaths.flatMap(path => environment.resourceAsStream(s"$path/$file"))
+              val source = configuration.viewPaths
+                .flatMap(path => environment.resourceAsStream(s"$path/$file"))
                 .headOption
                 .map(Source.fromInputStream)
                 .map(_.mkString)
@@ -127,7 +117,7 @@ class NunjucksRenderer @Inject() (
                 override def sourceName(): String = file
               }
             case _ =>
-              e
+              new RuntimeException(e.details, e)
           }
         case e => e
       }
@@ -137,7 +127,6 @@ class NunjucksRenderer @Inject() (
 
 @Singleton
 class NunjucksSetup @Inject() (
-                                configuration: Configuration,
                                 environment: Environment
                               ) {
 

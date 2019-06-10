@@ -24,6 +24,7 @@ lazy val lib = (project in file("lib"))
   .enablePlugins(SbtWeb, SbtAutoBuildPlugin, SbtGitVersioning, SbtArtifactory)
   .settings(inConfig(Test)(testSettings): _*)
   .settings(commonSettings: _*)
+  .settings(PlayCrossCompilation.playCrossCompilationSettings: _*)
   .settings(
     name := "play-nunjucks-spike",
     libraryDependencies ++= Seq(
@@ -55,16 +56,22 @@ lazy val itServer = (project in file("it-server"))
   .dependsOn(lib)
   .settings(inConfig(Test)(testSettings): _*)
   .settings(commonSettings: _*)
+  .settings(PlayCrossCompilation.itServerCrossCompilationSettings: _*)
   .settings(
     name := "it-server",
-    libraryDependencies ++= Seq(
-      guice,
-      "org.webjars.npm" % "govuk-frontend" % "1.0.0",
-      "org.scalactic" %% "scalactic" % "3.0.7" % "test",
-      "org.scalatest" %% "scalatest" % "3.0.7" % "test",
-      "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
-      "org.pegdown" % "pegdown" % "1.6.0" % "test",
-      "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1" % "test"
+    libraryDependencies ++= PlayCrossCompilation.dependencies(
+      shared = Seq(
+        filters,
+        "org.webjars.npm" % "govuk-frontend" % "1.0.0",
+        "org.scalactic" %% "scalactic" % "3.0.7" % "test",
+        "org.scalatest" %% "scalatest" % "3.0.7" % "test",
+        "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
+        "org.pegdown" % "pegdown" % "1.6.0" % "test",
+        "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1" % "test"
+      ),
+      play26 = Seq(
+        "com.typesafe.play" %% "play-guice" % PlayVersion.current
+      )
     ),
     Concat.groups := Seq(
       "javascripts/application.js" -> group(Seq("lib/govuk-frontend/all.js"))

@@ -4,9 +4,11 @@ import play.api.data.Form
 import play.api.i18n.Messages
 import play.api.libs.json.{JsObject, Json, OWrites}
 
+import scala.language.implicitConversions
+
 trait NunjucksSupport {
 
-  protected implicit def formOWrites(implicit messages: Messages): OWrites[Form[_]] =
+  protected implicit def formOWrites[A](implicit messages: Messages): OWrites[Form[A]] =
     OWrites {
       form =>
 
