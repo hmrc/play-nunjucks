@@ -33,6 +33,11 @@ lazy val lib = (project in file("."))
     }.taskValue
   )
 
+(test in(lib.project, Test)) := {
+  (test in(lib.project, Test)).value
+  (test in(itServer.project, Test)).value
+}
+
 lazy val itServer = (project in file("it-server"))
   .enablePlugins(PlayScala, SbtWeb)
   .dependsOn(lib)
