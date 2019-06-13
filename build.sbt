@@ -2,26 +2,7 @@ import play.core.PlayVersion
 
 lazy val majorVersionNumber = 0
 
-lazy val root = (project in file("."))
-  .disablePlugins(SbtAutoBuildPlugin, SbtArtifactory)
-  .settings(
-    crossScalaVersions := Seq("2.11.12"),
-    majorVersion := majorVersionNumber,
-    PlayCrossCompilation.rootCrossCompilationSettings,
-    parallelExecution in Test := false,
-    test := {
-      (test in(lib.project, Test)).value
-      (test in(itServer.project, Test)).value
-    },
-    run := {
-      (run in(itServer.project, Compile)).evaluated
-    },
-    publishAndDistribute := {
-      (publishAndDistribute in lib.project).value
-    }
-  )
-
-lazy val lib = (project in file("lib"))
+lazy val lib = (project in file("."))
   .enablePlugins(SbtWeb, SbtAutoBuildPlugin, SbtGitVersioning, SbtArtifactory)
   .settings(inConfig(Test)(testSettings): _*)
   .settings(commonSettings: _*)
