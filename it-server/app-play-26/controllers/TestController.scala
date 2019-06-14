@@ -22,7 +22,7 @@ class TestController @Inject() (
 
   def ok = Action.async {
     implicit request =>
-      Future.fromTry(renderer.render("hello-world.njk", Json.obj("subject" -> "World")))
+      renderer.render("hello-world.njk", Json.obj("subject" -> "World"))
         .map(Ok(_))
   }
 }

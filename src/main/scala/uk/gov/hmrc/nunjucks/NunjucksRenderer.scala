@@ -2,9 +2,10 @@ package uk.gov.hmrc.nunjucks
 
 
 import java.nio.file.Files
+import java.util.concurrent.{ExecutorService, Executors}
 
 import better.files.File
-import io.apigee.trireme.core.NodeModule
+import io.apigee.trireme.core.{NodeModule, Sandbox}
 import javax.inject.{Inject, Singleton}
 import org.mozilla.javascript.json.JsonParser
 import org.mozilla.javascript.{Context, JavaScriptException, Function => JFunction}
@@ -15,6 +16,7 @@ import play.api.mvc.RequestHeader
 import play.api.{Environment, PlayException}
 import play.twirl.api.Html
 
+import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Source
 import scala.util.{Failure, Success, Try}
 
@@ -27,6 +29,13 @@ class NunjucksRenderer @Inject() (
                                    messagesApi: MessagesApi
                                  ) {
 
+  private val threadPool: ExecutorService = {
+    Executors.newFixedThreadPool(configuration.threadCount)
+  }
+
+  private val executionContext: ExecutionContext =
+    ExecutionContext.fromExecutorService(threadPool)
+
   private val render = {
 
     val customModules: Map[String, NodeModule] = Map(
@@ -35,7 +44,11 @@ class NunjucksRenderer @Inject() (
       NunjucksHelperModule.moduleName    -> new NunjucksHelperModule()
     )
 
+    val sandbox: Sandbox = new Sandbox()
+    sandbox.setAsyncThreadPool(threadPool)
+
     val env = new PlayNodeEnvironment(customModules)
+    env.setSandbox(sandbox)
     env.setDefaultNodeVersion("0.12")
 
     val script = env.createScript("[eval]", setup.script.toJava, configuration.libPaths.toArray)
@@ -53,11 +66,11 @@ class NunjucksRenderer @Inject() (
     scope
   }
 
-  def render(template: String, ctx: JsObject)(implicit request: RequestHeader): Try[Html] = {
+  def render(template: String, ctx: JsObject)(implicit request: RequestHeader): Future[Html] = {
 
-    val context = Context.enter()
+    Future {
 
-    val result = Try {
+      val context = Context.enter()
 
       context.putThreadLocal("configuration", configuration)
       context.putThreadLocal("environment", environment)
@@ -65,26 +78,27 @@ class NunjucksRenderer @Inject() (
       context.putThreadLocal("reverseRoutes", reverseRoutes)
       context.putThreadLocal("request", request)
 
-      val obj = new JsonParser(context, scope).parseValue(Json.stringify(ctx))
+      val result = Try {
+        val obj = new JsonParser(context, scope).parseValue(Json.stringify(ctx))
+        render.call(context, scope, null, Array(template, obj)).asInstanceOf[String]
+      }.transform(Success.apply, toPlayException)
 
-      render.call(context, scope, null, Array(template, obj)).asInstanceOf[String]
-    }.transform(Success.apply, toPlayException)
+      context.removeThreadLocal("configuration")
+      context.removeThreadLocal("environment")
+      context.removeThreadLocal("messagesApi")
+      context.removeThreadLocal("reverseRoutes")
+      context.removeThreadLocal("request")
 
-    context.removeThreadLocal("configuration")
-    context.removeThreadLocal("environment")
-    context.removeThreadLocal("messagesApi")
-    context.removeThreadLocal("reverseRoutes")
-    context.removeThreadLocal("request")
+      Context.exit()
 
-    Context.exit()
-
-    result.map(Html.apply)
+      Html(result.get)
+    }(executionContext)
   }
 
-  def render(template: String)(implicit request: RequestHeader): Try[Html] =
+  def render(template: String)(implicit request: RequestHeader): Future[Html] =
     render(template, Json.obj())
 
-  def render[A](template: String, ctx: A)(implicit request: RequestHeader, writes: OWrites[A]): Try[Html] =
+  def render[A](template: String, ctx: A)(implicit request: RequestHeader, writes: OWrites[A]): Future[Html] =
     render(template, writes.writes(ctx))
 
   private val TemplateError = """Template render error: \((.*)\) \[Line (\d+), Column (\d+)\]""".r

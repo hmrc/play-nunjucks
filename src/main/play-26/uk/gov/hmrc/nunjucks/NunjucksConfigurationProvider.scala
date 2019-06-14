@@ -23,6 +23,13 @@ class NunjucksConfigurationProvider @Inject() (
           (setup.libDir / dir).pathAsString
       }
 
-    NunjucksConfiguration(viewPaths = viewPaths, libPaths = libPaths)
+    val threadCount =
+      configuration.get[Int]("nunjucks.threadCount")
+
+    NunjucksConfiguration(
+      viewPaths   = viewPaths,
+      libPaths    = libPaths,
+      threadCount = threadCount
+    )
   }
 }

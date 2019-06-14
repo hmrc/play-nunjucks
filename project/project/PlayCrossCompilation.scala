@@ -3,7 +3,7 @@ import Keys._
 import uk.gov.hmrc.playcrosscompilation.AbstractPlayCrossCompilation
 import uk.gov.hmrc.playcrosscompilation.PlayVersion.{Play25, Play26}
 
-object PlayCrossCompilation extends AbstractPlayCrossCompilation(defaultPlayVersion = Play26) {
+object PlayCrossCompilation extends AbstractPlayCrossCompilation(defaultPlayVersion = Play25) {
 
   lazy val version: String = playVersion match {
     case Play25 => "2.5.19"
