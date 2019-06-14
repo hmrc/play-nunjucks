@@ -1,4 +1,4 @@
-# play-uk.gov.hmrc.nunjucks-spike
+# play-nunjucks-spike
 
 This is a library which enables the use of [Nunjucks](https://mozilla.github.io/uk.gov.hmrc.nunjucks/)
 templates in a [Play!](https://www.playframework.com/) web application.
