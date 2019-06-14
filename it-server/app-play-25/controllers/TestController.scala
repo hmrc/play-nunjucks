@@ -5,7 +5,7 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
 import uk.gov.hmrc.nunjucks.{NunjucksRenderer, NunjucksSupport}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class TestController @Inject() (
@@ -18,7 +18,7 @@ class TestController @Inject() (
 
   def ok = Action.async {
     implicit request =>
-      Future.fromTry(renderer.render("hello-world.njk", Json.obj("subject" -> "World")))
+      renderer.render("hello-world.njk", Json.obj("subject" -> "World"))
         .map(Ok(_))
   }
 }
