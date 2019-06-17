@@ -31,7 +31,7 @@ lazy val lib = (project in file("."))
       IO.zip(filesToZip, zipFile)
       Seq(zipFile)
     }.taskValue,
-    coverageExcludedPackages := "<empty>;uk.gov.hmrc.BuildInfo"
+    coverageExcludedPackages := "<empty>;uk.gov.hmrc.BuildInfo;uk.gov.hmrc.nunjucks.PlayModuleRegistry"
   )
 
 (test in(lib.project, Test)) := {

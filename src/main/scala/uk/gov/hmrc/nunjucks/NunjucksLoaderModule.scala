@@ -9,7 +9,9 @@ import scala.io.Source
 
 class NunjucksLoaderModule extends NodeModule {
 
+  // $COVERAGE-OFF$
   override def getModuleName: String = NunjucksLoaderModule.moduleName
+  // $COVERAGE-ON$
 
   override def registerExports(cx: Context, global: Scriptable, runtime: NodeRuntime): Scriptable = {
     ScriptableObject.defineClass(global, classOf[NunjucksLoader])

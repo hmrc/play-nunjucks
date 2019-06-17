@@ -8,7 +8,9 @@ import org.mozilla.javascript.{Context, Scriptable, ScriptableObject, Function =
 
 class NunjucksBootstrapModule extends NodeModule {
 
+  // $COVERAGE-OFF$
   override def getModuleName: String = NunjucksBootstrapModule.moduleName
+  // $COVERAGE-ON$
 
   override def registerExports(cx: Context, global: Scriptable, runtime: NodeRuntime): Scriptable = {
 
