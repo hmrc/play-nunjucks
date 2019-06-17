@@ -12,8 +12,7 @@ class NunjucksConfigurationProvider @Inject() (
   override def get(): NunjucksConfiguration = {
 
     val viewPaths: Seq[String] = configuration
-      .getOptional[Seq[String]]("nunjucks.viewPaths")
-      .getOrElse(Seq.empty)
+      .get[Seq[String]]("nunjucks.viewPaths")
 
     val libPaths = ("" :: configuration
       .getOptional[Seq[String]]("nunjucks.libPaths")
