@@ -9,6 +9,7 @@ addSbtPlugin("com.typesafe.play" % "sbt-plugin" % PlayCrossCompilation.version)
 addSbtPlugin("net.ground5hark.sbt" % "sbt-concat" % "0.1.9")
 addSbtPlugin("com.typesafe.sbt" % "sbt-uglify" % "2.0.0")
 addSbtPlugin("org.irundaia.sbt" % "sbt-sassify" % "1.4.11")
+addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.5.1")
 
 addSbtPlugin("uk.gov.hmrc" % "sbt-auto-build" % "1.13.0")
 addSbtPlugin("uk.gov.hmrc" % "sbt-git-versioning" % "1.15.0")
