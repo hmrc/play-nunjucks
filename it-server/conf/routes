@@ -1,5 +1,3 @@
-->         /sub                               sub.Routes
-
 GET        /public/*file                      controllers.Assets.versioned(path = "/public", file)
 
 GET        /                                  controllers.QuestionController.get
@@ -8,3 +6,4 @@ POST       /                                  controllers.QuestionController.pos
 # Test routes
 GET        /route-with-args/:string/:int      controllers.TestController.routeWithArgs(string: String, int: Int)
 GET        /ok                                controllers.TestController.ok
+->         /sub                               sub.Routes
