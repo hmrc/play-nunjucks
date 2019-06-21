@@ -101,35 +101,36 @@ class NunjucksRenderer @Inject() (
   def render[A](template: String, ctx: A)(implicit request: RequestHeader, writes: OWrites[A]): Future[Html] =
     render(template, writes.writes(ctx))
 
-  private val TemplateError = """Template render error: \((.*)\) \[Line (\d+), Column (\d+)\]""".r
+  private val TemplateErrorWithLocation =
+    """(.*): \((.*)\) \[Line (\d+), Column (\d+)\]$""".r
+  private val TemplateError =
+    """(.*): \((.*)\)$""".r
 
   private def toPlayException[A](e: Throwable): Failure[A] = {
     Failure {
       e match {
         case e: JavaScriptException =>
 
+          def getSource(file: String): String =
+            configuration.viewPaths
+            .flatMap(path => environment.resourceAsStream(s"$path/$file"))
+            .headOption
+            .map(Source.fromInputStream)
+            .map(_.mkString)
+            .getOrElse("")
+
           val (first, stack) = e.details.splitAt(e.details.indexOf("\n"))
 
           first match {
-            case TemplateError(file, lpos, cpos) =>
-
-              val source = configuration.viewPaths
-                .flatMap(path => environment.resourceAsStream(s"$path/$file"))
-                .headOption
-                .map(Source.fromInputStream)
-                .map(_.mkString)
-                .getOrElse("")
-
-              new PlayException.ExceptionSource("Nunjucks Exception", stack.trim) {
-
+            case TemplateErrorWithLocation(title, file, lpos, cpos) =>
+              new PlayException.ExceptionSource(title, stack.trim, e) {
                 override def line(): Integer = lpos.toInt
-
                 override def position(): Integer = cpos.toInt
-
-                override def input(): String = source
-
+                override def input(): String = getSource(file)
                 override def sourceName(): String = file
               }
+            case TemplateError(_, _) =>
+              new PlayException(first, stack.trim, e)
             case _ =>
               new RuntimeException(e.details, e)
           }

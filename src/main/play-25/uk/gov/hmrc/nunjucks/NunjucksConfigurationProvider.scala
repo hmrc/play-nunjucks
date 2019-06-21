@@ -12,10 +12,8 @@ class NunjucksConfigurationProvider @Inject() (
 
   override def get(): NunjucksConfiguration = {
 
-    val viewPaths: Seq[String] = configuration
-      .getStringList("nunjucks.viewPaths")
-      .map(_.asScala)
-      .getOrElse(Seq.empty)
+    val viewPaths: Seq[String] = configuration.underlying
+      .getStringList("nunjucks.viewPaths").asScala
 
     val libPaths: Seq[String] = ("" :: configuration
         .getStringList("nunjucks.libPaths")

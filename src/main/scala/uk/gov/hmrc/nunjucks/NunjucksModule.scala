@@ -10,10 +10,10 @@ class NunjucksModule extends Module {
       bind[NunjucksRenderer].toSelf.eagerly,
       bind[NunjucksConfiguration].toProvider[NunjucksConfigurationProvider],
       bind[NunjucksSetup].toSelf.eagerly,
-      if (environment.mode == Mode.Prod) {
-        bind[NunjucksRoutesHelper].to[ProductionNunjucksRoutesHelper]
-      } else {
+      if (environment.mode == Mode.Dev) {
         bind[NunjucksRoutesHelper].to[DevelopmentNunjucksRoutesHelper]
+      } else {
+        bind[NunjucksRoutesHelper].to[ProductionNunjucksRoutesHelper]
       }
     )
 }

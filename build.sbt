@@ -30,7 +30,8 @@ lazy val lib = (project in file("."))
       val zipFile = (resourceManaged in Compile).value / "nodeModules.tar"
       IO.zip(filesToZip, zipFile)
       Seq(zipFile)
-    }.taskValue
+    }.taskValue,
+    coverageExcludedPackages := "<empty>;uk.gov.hmrc.BuildInfo;uk.gov.hmrc.nunjucks.PlayModuleRegistry"
   )
 
 (test in(lib.project, Test)) := {
@@ -63,7 +64,8 @@ lazy val itServer = (project in file("it-server"))
     Concat.groups := Seq(
       "javascripts/application.js" -> group(Seq("lib/govuk-frontend/all.js"))
     ),
-    pipelineStages in Assets := Seq(concat, uglify)
+    pipelineStages in Assets := Seq(concat, uglify),
+    coverageEnabled := false
   )
 
 lazy val testSettings: Seq[Def.Setting[_]] = Seq(

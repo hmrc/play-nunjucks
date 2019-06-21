@@ -40,7 +40,4 @@ trait NunjucksSupport {
           }
         )
     }
-
-  protected implicit val jsObjectOWrites: OWrites[JsObject] =
-    OWrites(identity)
 }

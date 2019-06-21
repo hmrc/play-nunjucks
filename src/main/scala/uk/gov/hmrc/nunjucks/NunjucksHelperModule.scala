@@ -10,7 +10,9 @@ import views.html.helper.CSRF
 
 class NunjucksHelperModule extends NodeModule {
 
+  // $COVERAGE-OFF$
   override def getModuleName: String = NunjucksHelperModule.moduleName
+  // $COVERAGE-ON$
 
   override def registerExports(cx: Context, global: Scriptable, runtime: NodeRuntime): Scriptable = {
 
