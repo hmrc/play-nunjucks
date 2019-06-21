@@ -2,6 +2,7 @@ package uk.gov.hmrc.nunjucks
 
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FreeSpec, MustMatchers, OptionValues}
+import play.api.PlayException
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.mvc.RequestHeader
@@ -13,11 +14,11 @@ class NunjucksRendererSpec extends FreeSpec with MustMatchers
 
   "NunjucksRenderer" - {
 
-    "must render successfully" - {
+    val app = new GuiceApplicationBuilder()
+    val renderer = app.injector.instanceOf[NunjucksRenderer]
+    implicit val request: RequestHeader = FakeRequest()
 
-      val app = new GuiceApplicationBuilder()
-      val renderer = app.injector.instanceOf[NunjucksRenderer]
-      implicit val request: RequestHeader = FakeRequest()
+    "must render successfully" - {
 
       "given a valid template" in {
 
@@ -37,6 +38,39 @@ class NunjucksRendererSpec extends FreeSpec with MustMatchers
         val context = TestViewModel("bar")
         val result = renderer.render("test.njk", context).futureValue
         result.toString mustEqual "Hello, bar!"
+      }
+    }
+
+    "fail to render" - {
+
+      "given a template with a syntax error" in {
+
+        whenReady(renderer.render("syntax-error.njk").failed) {
+          case exception: PlayException.ExceptionSource =>
+            exception.title mustEqual "Template render error"
+            exception.line mustEqual 1
+            exception.position mustEqual 19
+            exception.input mustEqual "Hello, {{ subject }!"
+            exception.sourceName mustEqual "syntax-error.njk"
+        }
+      }
+
+      "given a template with a missing import" in {
+
+        whenReady(renderer.render("import-error.njk").failed) {
+          case exception: PlayException =>
+            exception.title must include("Template render error: (import-error.njk)")
+            exception.description mustEqual "Error: template not found: foo.njk"
+        }
+      }
+
+      "given a template with a javascript error" in {
+
+        whenReady(renderer.render("javascript-error.njk").failed) {
+          case exception: PlayException =>
+            exception.title mustEqual "Template render error: (javascript-error.njk)"
+            exception.description mustEqual """Error: Unable to call `routes["controllers"]["MissingController"]["get"]`, which is undefined or falsey"""
+        }
       }
     }
   }
