@@ -50,6 +50,18 @@ object NunjucksHelper {
   }
 
   @JSFunction
+  def language(cx: Context, thisObj: Scriptable, args: Array[AnyRef], fn: JFunction): String = {
+
+    val request: RequestHeader = cx.getThreadLocal("request")
+      .asInstanceOf[RequestHeader]
+
+    val messagesApi: MessagesApi = cx.getThreadLocal("messagesApi")
+      .asInstanceOf[MessagesApi]
+
+    messagesApi.preferred(request).lang.language
+  }
+
+  @JSFunction
   def csrf(cx: Context, thisObj: Scriptable, args: Array[AnyRef], fn: JFunction): String = {
 
     val request: RequestHeader = cx.getThreadLocal("request")
