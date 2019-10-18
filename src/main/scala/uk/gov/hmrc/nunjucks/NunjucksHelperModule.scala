@@ -71,10 +71,10 @@ object NunjucksHelper {
 
     val language = messagesApi.preferred(r).lang.language
 
-    val requestObject = s"""var request = { "language" : "$language" }"""
+    val requestObject = cx.newObject(thisObj)
+    ScriptableObject.putProperty(requestObject, "language", language)
 
-    cx.evaluateString(thisObj.getParentScope, s"""(function () { $requestObject; return request; })();""", "request", 0, null)
-      .asInstanceOf[Scriptable]
+    requestObject
   }
 
   @JSGetter("routes")
