@@ -10,10 +10,10 @@ var env = new nunjucks.Environment([resourceLoader, fileLoader]);
 
 env.addGlobal("messages", helpers.messages);
 env.addGlobal("csrf", helpers.csrf);
-env.addGlobal("language", helpers.language);
 
 function render(view, context) {
   env.addGlobal("routes", helpers.routes);
+  env.addGlobal("request", helpers.request);
   return env.render(view, context);
 }
 
