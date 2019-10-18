@@ -58,6 +58,25 @@ object NunjucksHelper {
     CSRF.formField(request).toString
   }
 
+  @JSGetter("request")
+  def request(thisObj: ScriptableObject): Scriptable = {
+
+    val cx = Context.getCurrentContext
+
+    val r: RequestHeader = cx.getThreadLocal("request")
+      .asInstanceOf[RequestHeader]
+
+    val messagesApi: MessagesApi = cx.getThreadLocal("messagesApi")
+      .asInstanceOf[MessagesApi]
+
+    val language = messagesApi.preferred(r).lang.language
+
+    val requestObject = s"""var request = { "language" : "$language" }"""
+
+    cx.evaluateString(thisObj.getParentScope, s"""(function () { $requestObject; return request; })();""", "request", 0, null)
+      .asInstanceOf[Scriptable]
+  }
+
   @JSGetter("routes")
   def routes(thisObj: ScriptableObject): Scriptable = {
 
