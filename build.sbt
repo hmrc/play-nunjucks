@@ -50,7 +50,7 @@ lazy val itServer = (project in file("it-server"))
     libraryDependencies ++= PlayCrossCompilation.dependencies(
       shared = Seq(
         filters,
-        "org.webjars.npm" % "govuk-frontend" % "1.0.0",
+        "org.webjars.npm" % "govuk-frontend" % "3.3.0",
         "org.scalactic" %% "scalactic" % "3.0.7" % "test",
         "org.scalatest" %% "scalatest" % "3.0.7" % "test",
         "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
@@ -62,7 +62,7 @@ lazy val itServer = (project in file("it-server"))
       )
     ),
     Concat.groups := Seq(
-      "javascripts/application.js" -> group(Seq("lib/govuk-frontend/all.js"))
+      "javascripts/application.js" -> group(Seq("lib/govuk-frontend/govuk/all.js"))
     ),
     pipelineStages in Assets := Seq(concat, uglify),
     coverageEnabled := false
