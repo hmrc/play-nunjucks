@@ -5,8 +5,6 @@ templates in a [Play!](https://www.playframework.com/) web application.
 
 ## Installation
 
-__Currently this is an investigation and is not published to an external repository__
-
 To publish the library locally, clone this repository and run:
 
 ```bash
