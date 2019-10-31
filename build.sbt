@@ -8,7 +8,7 @@ lazy val lib = (project in file("."))
   .settings(commonSettings: _*)
   .settings(PlayCrossCompilation.playCrossCompilationSettings: _*)
   .settings(
-    name := "play-nunjucks-spike",
+    name := "play-nunjucks",
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play" % PlayVersion.current % "test, provided",
       "com.typesafe.play" %% "play-test" % PlayVersion.current % "test",
@@ -81,7 +81,7 @@ lazy val testSettings: Seq[Def.Setting[_]] = Seq(
 lazy val commonSettings: Seq[Def.Setting[_]] = Seq(
   organization := "uk.gov.hmrc",
   majorVersion := majorVersionNumber,
-  makePublicallyAvailableOnBintray := false,
+  makePublicallyAvailableOnBintray := true,
   scalaVersion := "2.11.12",
   crossScalaVersions := Seq("2.11.12"),
   scalacOptions ++= Seq(
