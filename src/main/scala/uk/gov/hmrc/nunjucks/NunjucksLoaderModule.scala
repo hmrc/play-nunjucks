@@ -58,7 +58,7 @@ class NunjucksLoader extends ScriptableObject {
           val obj = context.newObject(getParentScope)
           obj.put("path", obj, view)
           obj.put("src", obj, content)
-          obj.put("noCache", obj, true)
+          obj.put("noCache", obj, false)
 
           obj
       }.orNull
