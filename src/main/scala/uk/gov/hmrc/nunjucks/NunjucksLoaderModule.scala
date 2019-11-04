@@ -37,6 +37,16 @@ class NunjucksLoader extends ScriptableObject {
     configuration.viewPaths
   }
 
+  private def noCache: Boolean = {
+    val context = Context.getCurrentContext
+
+    val configuration =
+      context.getThreadLocal("configuration")
+        .asInstanceOf[NunjucksConfiguration]
+
+    configuration.noCache
+  }
+
   override def getClassName: String = NunjucksLoader.className
 
   @JSFunction
@@ -58,7 +68,7 @@ class NunjucksLoader extends ScriptableObject {
           val obj = context.newObject(getParentScope)
           obj.put("path", obj, view)
           obj.put("src", obj, content)
-          obj.put("noCache", obj, false)
+          obj.put("noCache", obj, noCache)
 
           obj
       }.orNull

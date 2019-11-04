@@ -37,6 +37,7 @@ Add this to your application.conf file:
 nunjucks {
   viewPaths = ["views"]
   libPaths = ["govuk-frontend"]
+  noCache = false // Enable caching in Production for maximum performance, disable (set to true) in Development so templates get recompiled when changed
 }
 ```
 

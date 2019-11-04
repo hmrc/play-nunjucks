@@ -25,10 +25,14 @@ class NunjucksConfigurationProvider @Inject() (
     val threadCount =
       configuration.get[Int]("nunjucks.threadCount")
 
+    val noCache =
+      configuration.get[Boolean]("nunjucks.noCache")
+
     NunjucksConfiguration(
       viewPaths   = viewPaths,
       libPaths    = libPaths,
-      threadCount = threadCount
+      threadCount = threadCount,
+      noCache = noCache
     )
   }
 }
