@@ -5,17 +5,10 @@ templates in a [Play!](https://www.playframework.com/) web application.
 
 ## Installation
 
-To publish the library locally, clone this repository and run:
-
-```bash
-sbt lib/publishLocal
-```
-
-Once you have done this you can include it in a local project
-by adding the following to your `build.sbt` file:
-
+sbt
 ```scala
-libraryDependencies += "uk.gov.hmrc" %% uk.govuk.gov.hmrc.nunjucksnjucks % "0.1.0-SNAPSHOT"
+// replace suffix play-26 with play-25 if using with Play 2.5
+libraryDependencies += "uk.gov.hmrc" %% "play-nunjucks" % "x.y.z-play-26"
 ```
 
 ## Usage
@@ -163,3 +156,8 @@ Adding the following logging configuration to your logback.xml will suppress noi
   <logger name="io.apigee.trireme" level="INFO"/>
   <logger name="org.webjars" level="INFO"/>
 ```
+
+## Using the library from an MDTP microservice
+
+Please read the [following guide](/docs/getting-started-mdtp.md) for instructions on how to use
+the library on an MDTP microservice.
