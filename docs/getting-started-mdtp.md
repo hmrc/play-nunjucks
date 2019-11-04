@@ -9,16 +9,16 @@ project which gives examples of using nunjucks and the viewmodels, which is a us
 #### Include the nunjucks library and viewmodels library
 
 https://github.com/hmrc/play-nunjucks
-https://github.com/hmrc/play-nunjucks-viewmodel
-
-Note: at the time of writing the viewmodels library is not published anywhere, so you will need to clone the repository and use sbt lib/publishLocal to publish it to your local ivy cache.
+https://github.com/hmrc/play-nunjucks-viewmodel 
 
 Add this to your AppDependencies / build.sbt
+
+> Note: at the moment `play-nunjucks-viewmodel` is published as a Play 2.6 library.
 
 ```sbt
 // replace with play-25 if using on a Play 2.5 microservice
 libraryDependencies += "uk.gov.hmrc" %% "play-nunjucks" % "x.y.z-play-26"
-libraryDependencies += "uk.gov.hmrc" %% "play-nunjucks-viewmodel" % "x.y.z-SNAPSHOT"
+libraryDependencies += "uk.gov.hmrc" %% "play-nunjucks-viewmodel" % "x.y.z"
 ```
 
 #### Include the `govuk-frontend` library
