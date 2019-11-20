@@ -164,3 +164,14 @@ Adding the following logging configuration to your logback.xml will suppress noi
 
 Please read the [following guide](/docs/getting-started-mdtp.md) for instructions on how to use
 the library on an MDTP microservice.
+
+### Nunjucks rendering exceptions
+When this library is consumed by an MDTP microservice and a Nunjucks
+page has a bug which raises an error when rendered and viewed at run
+time, this will be sent into the application log at ERROR level with
+the relevant file, location in file and stack trace.
+
+It may be obscured amongst other logs when running locally but will
+be there. When this occurs in an MDTP environment, you should be
+able to find this among your application logs in Kibana with a
+relevant field `exception` and the stack trace therewithin.
