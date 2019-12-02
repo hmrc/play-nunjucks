@@ -2,11 +2,12 @@ package uk.gov.hmrc.nunjucks
 
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FreeSpec, MustMatchers, OptionValues}
-import play.api.PlayException
+import play.api.{Environment, Mode, PlayException}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.mvc.RequestHeader
 import play.api.test.FakeRequest
+import play.twirl.api.Html
 import uk.gov.hmrc.nunjucks.models.TestViewModel
 
 class NunjucksRendererSpec extends FreeSpec with MustMatchers
@@ -41,7 +42,7 @@ class NunjucksRendererSpec extends FreeSpec with MustMatchers
       }
     }
 
-    "fail to render" - {
+    "fail to render in non-Dev modes" - {
 
       "given a template with a syntax error" in {
 
@@ -71,6 +72,41 @@ class NunjucksRendererSpec extends FreeSpec with MustMatchers
             exception.title mustEqual "Template render error: (javascript-error.njk)"
             exception.description mustEqual """Error: Unable to call `routes["controllers"]["MissingController"]["get"]`, which is undefined or falsey"""
         }
+      }
+    }
+
+    "must render a Debug error page in Dev mode" - {
+
+      val dev: Environment = Environment.simple(mode=Mode.Dev)
+      val devModeApp = GuiceApplicationBuilder(environment = dev)
+      val devModeRenderer = devModeApp.injector.instanceOf[NunjucksRenderer]
+
+      "given a template with a syntax error" in {
+
+        val result: Html = devModeRenderer.render("syntax-error.njk").futureValue
+        result.toString() must (
+          include ("Template render error")
+          and include("syntax-error.njk:1")
+          and include ("Hello, {{ subject }")
+        )
+      }
+
+      "given a template with a missing import" in {
+
+        val result: Html = devModeRenderer.render("import-error.njk").futureValue
+        result.toString() must (
+          include ("Template render error: (import-error.njk)")
+          and include ("Error: template not found: foo.njk")
+        )
+      }
+
+      "given a template with a javascript error" in {
+
+        val result: Html = devModeRenderer.render("javascript-error.njk").futureValue
+        result.toString() must (
+          include ("Template render error: (javascript-error.njk)")
+          and include ("Error: Unable to call `routes[&quot;controllers&quot;][&quot;MissingController&quot;][&quot;get&quot;]`, which is undefined or falsey")
+        )
       }
     }
   }

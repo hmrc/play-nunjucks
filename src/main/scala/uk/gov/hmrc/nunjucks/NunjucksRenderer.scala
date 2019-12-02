@@ -12,9 +12,11 @@ import org.mozilla.javascript.{Context, JavaScriptException, Function => JFuncti
 import org.webjars.WebJarExtractor
 import play.api.i18n.MessagesApi
 import play.api.libs.json.{JsObject, Json, OWrites}
+import play.api.Logger
 import play.api.mvc.RequestHeader
-import play.api.{Environment, PlayException}
+import play.api.{Environment, Mode, PlayException}
 import play.twirl.api.Html
+import views.html.defaultpages.devError
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Source
@@ -91,7 +93,16 @@ class NunjucksRenderer @Inject() (
 
       Context.exit()
 
-      Html(result.get)
+      result match {
+        case Success(v) => Html(v)
+        case Failure(e) =>
+          lazy val runningLocally: Boolean = environment.mode.equals(Mode.Dev)
+          if (runningLocally) {
+            Logger.error(s"An error was encountered while trying to render Nunjucks template: $template.", e)
+            visualisePlayException(e)
+          }
+          else throw e
+      }
     }(executionContext)
   }
 
@@ -105,6 +116,14 @@ class NunjucksRenderer @Inject() (
     """(.*): \((.*)\) \[Line (\d+), Column (\d+)\]$""".r
   private val TemplateError =
     """(.*): \((.*)\)$""".r
+
+  private def visualisePlayException(e: Throwable): Html = e match {
+    case playException: PlayException => devError(
+      playEditor = None,
+      error = playException
+    )
+    case _ => throw e
+  }
 
   private def toPlayException[A](e: Throwable): Failure[A] = {
     Failure {
