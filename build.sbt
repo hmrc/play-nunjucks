@@ -83,7 +83,7 @@ lazy val commonSettings: Seq[Def.Setting[_]] = Seq(
   majorVersion := majorVersionNumber,
   makePublicallyAvailableOnBintray := true,
   scalaVersion := "2.11.12",
-  crossScalaVersions := Seq("2.11.12"),
+  crossScalaVersions := Seq("2.11.12", "2.12.8"),
   scalacOptions ++= Seq(
     "-Xfatal-warnings",
     "-deprecation"
