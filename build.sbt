@@ -1,6 +1,9 @@
 import PlayCrossCompilation.{dependencies, version}
 import play.core.PlayVersion
 
+val scala_2_11 = "2.11.12"
+val scala_2_12 = "2.12.8"
+
 lazy val majorVersionNumber = 0
 
 lazy val lib = (project in file("."))
@@ -36,10 +39,10 @@ lazy val libDependencies: Seq[ModuleID] = dependencies(
 
     val test = Seq(
       "com.typesafe.play" %% "play-test" % version,
-      "org.scalactic" %% "scalactic" % "3.0.7" ,
-      "org.scalatest" %% "scalatest" % "3.0.7" ,
-      "org.scalacheck" %% "scalacheck" % "1.14.0" ,
-      "org.scalamock" %% "scalamock" % "4.1.0" ,
+      "org.scalactic" %% "scalactic" % "3.0.7",
+      "org.scalatest" %% "scalatest" % "3.0.7",
+      "org.scalacheck" %% "scalacheck" % "1.14.0",
+      "org.scalamock" %% "scalamock" % "4.1.0",
       "org.pegdown" % "pegdown" % "1.6.0"
     ).map(_ % Test)
 
@@ -108,11 +111,14 @@ lazy val commonSettings: Seq[Def.Setting[_]] = Seq(
   organization := "uk.gov.hmrc",
   majorVersion := majorVersionNumber,
   makePublicallyAvailableOnBintray := true,
-  scalaVersion := "2.11.12",
-  crossScalaVersions := Seq("2.11.12", "2.12.8"),
-  scalacOptions ++= Seq(
+  scalaVersion := scala_2_11,
+  crossScalaVersions := Seq(scala_2_11, scala_2_12),
+  scalacOptions ++= (Seq(
     "-deprecation"
-  ),
+  ) ++ CrossVersion.partialVersion(scalaVersion.value) match {
+    case scala_2_12 => Nil
+    case _          => Seq("-Xfatal-warnings")
+  }),
   resolvers ++= Seq(
     Resolver.bintrayRepo("hmrc", "releases"),
     Resolver.bintrayRepo("hmrc", "snapshots"),
