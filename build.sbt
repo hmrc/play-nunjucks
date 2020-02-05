@@ -1,4 +1,8 @@
+import PlayCrossCompilation.{dependencies, version}
 import play.core.PlayVersion
+
+val scala_2_11 = "2.11.12"
+val scala_2_12 = "2.12.8"
 
 lazy val majorVersionNumber = 0
 
@@ -9,21 +13,7 @@ lazy val lib = (project in file("."))
   .settings(PlayCrossCompilation.playCrossCompilationSettings: _*)
   .settings(
     name := "play-nunjucks",
-    libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play" % PlayVersion.current % "test, provided",
-      "com.typesafe.play" %% "play-test" % PlayVersion.current % "test",
-      "com.typesafe.play" %% "filters-helpers" % PlayVersion.current % "test, provided",
-      "com.github.pathikrit" %% "better-files" % "3.5.0",
-      "org.scalactic" %% "scalactic" % "3.0.7" % "test",
-      "org.scalatest" %% "scalatest" % "3.0.7" % "test",
-      "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
-      "org.scalamock" %% "scalamock" % "4.1.0" % "test",
-      "org.pegdown" % "pegdown" % "1.6.0" % "test",
-      "io.apigee.trireme" % "trireme-core" % "0.9.4",
-      "io.apigee.trireme" % "trireme-kernel" % "0.9.4",
-      "io.apigee.trireme" % "trireme-node12src" % "0.9.4",
-      "org.webjars" % "webjars-locator-core" % "0.35"
-    ),
+    libraryDependencies ++= libDependencies,
     resourceGenerators in Compile += Def.task {
       val nodeModules = (JsEngineKeys.npmNodeModules in Assets).value
       val filesToZip = nodeModules pair relativeTo(baseDirectory.value)
@@ -34,9 +24,47 @@ lazy val lib = (project in file("."))
     coverageExcludedPackages := "<empty>;uk.gov.hmrc.BuildInfo;uk.gov.hmrc.nunjucks.PlayModuleRegistry"
   )
 
-(test in(lib.project, Test)) := {
-  (test in(lib.project, Test)).value
-  (test in(itServer.project, Test)).value
+lazy val libDependencies: Seq[ModuleID] = dependencies(
+  shared = {
+
+    val compile = Seq(
+      "com.typesafe.play" %% "play" % version % "provided",
+      "com.typesafe.play" %% "filters-helpers" % version % "provided",
+      "com.github.pathikrit" %% "better-files" % "3.5.0",
+      "io.apigee.trireme" % "trireme-core" % "0.9.4",
+      "io.apigee.trireme" % "trireme-kernel" % "0.9.4",
+      "io.apigee.trireme" % "trireme-node12src" % "0.9.4",
+      "org.webjars" % "webjars-locator-core" % "0.35"
+    )
+
+    val test = Seq(
+      "com.typesafe.play" %% "play-test" % version,
+      "org.scalactic" %% "scalactic" % "3.0.7",
+      "org.scalatest" %% "scalatest" % "3.0.7",
+      "org.scalacheck" %% "scalacheck" % "1.14.0",
+      "org.scalamock" %% "scalamock" % "4.1.0",
+      "org.pegdown" % "pegdown" % "1.6.0"
+    ).map(_ % Test)
+
+    compile ++ test
+  },
+  play25 = {
+    val test = Seq(
+      "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1"
+    ).map(_ % Test)
+    test
+  },
+  play26 = {
+    val test = Seq(
+      "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2"
+    )
+    test
+  }
+)
+
+(test in (lib.project, Test)) := {
+  (test in (lib.project, Test)).value
+  (test in (itServer.project, Test)).value
 }
 
 lazy val itServer = (project in file("it-server"))
@@ -62,14 +90,15 @@ lazy val itServer = (project in file("it-server"))
       )
     ),
     Concat.groups := Seq(
-      "javascripts/application.js" -> group(Seq("lib/govuk-frontend/govuk/all.js"))
+      "javascripts/application.js" -> group(
+        Seq("lib/govuk-frontend/govuk/all.js"))
     ),
     pipelineStages in Assets := Seq(concat, uglify),
     coverageEnabled := false
   )
 
 lazy val testSettings: Seq[Def.Setting[_]] = Seq(
-  fork        := true,
+  fork := true,
   javaOptions ++= Seq(
     "-Dconfig.resource=test.application.conf"
   ),
@@ -82,12 +111,14 @@ lazy val commonSettings: Seq[Def.Setting[_]] = Seq(
   organization := "uk.gov.hmrc",
   majorVersion := majorVersionNumber,
   makePublicallyAvailableOnBintray := true,
-  scalaVersion := "2.11.12",
-  crossScalaVersions := Seq("2.11.12", "2.12.8"),
-  scalacOptions ++= Seq(
-    "-Xfatal-warnings",
+  scalaVersion := scala_2_11,
+  crossScalaVersions := Seq(scala_2_11, scala_2_12),
+  scalacOptions ++= (Seq(
     "-deprecation"
-  ),
+  ) ++ CrossVersion.partialVersion(scalaVersion.value) match {
+    case scala_2_12 => Nil
+    case _          => Seq("-Xfatal-warnings")
+  }),
   resolvers ++= Seq(
     Resolver.bintrayRepo("hmrc", "releases"),
     Resolver.bintrayRepo("hmrc", "snapshots"),
