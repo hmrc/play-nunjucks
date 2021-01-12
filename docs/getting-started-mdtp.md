@@ -103,4 +103,3 @@ Please add the following logging configuration to your logback.xml to suppress s
   <logger name="io.apigee.trireme" level="INFO"/>
   <logger name="org.webjars" level="INFO"/>
 ```
-
