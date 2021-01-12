@@ -3,15 +3,14 @@ import Keys._
 import uk.gov.hmrc.playcrosscompilation.AbstractPlayCrossCompilation
 import uk.gov.hmrc.playcrosscompilation.PlayVersion.{Play25, Play26}
 
-object PlayCrossCompilation extends AbstractPlayCrossCompilation(defaultPlayVersion = Play25) {
+object PlayCrossCompilation extends AbstractPlayCrossCompilation(defaultPlayVersion = Play26) {
 
   lazy val version: String = playVersion match {
-    case Play25 => "2.5.19"
+    case Play25 => throw new IllegalArgumentException("This library does not support Play 2.5")
     case Play26 => "2.6.20"
   }
 
-  private lazy val playDir =
-    if (playVersion == Play25) "play-25" else "play-26"
+  private lazy val playDir = "play-26"
 
   lazy val itServerCrossCompilationSettings: Seq[Def.Setting[_]] = Seq(
     crossScalaVersions ~= playCrossScalaBuilds,

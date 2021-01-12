@@ -7,7 +7,6 @@ templates in a [Play!](https://www.playframework.com/) web application.
 
 sbt
 ```scala
-// replace suffix play-26 with play-25 if using with Play 2.5
 libraryDependencies += "uk.gov.hmrc" %% "play-nunjucks" % "x.y.z-play-26"
 ```
 

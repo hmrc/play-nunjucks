@@ -16,7 +16,6 @@ Add this to your AppDependencies / build.sbt
 > Note: at the moment `play-nunjucks-viewmodel` is published as a Play 2.6 library.
 
 ```sbt
-// replace with play-25 if using on a Play 2.5 microservice
 libraryDependencies += "uk.gov.hmrc" %% "play-nunjucks" % "x.y.z-play-26"
 libraryDependencies += "uk.gov.hmrc" %% "play-nunjucks-viewmodel" % "x.y.z"
 ```
