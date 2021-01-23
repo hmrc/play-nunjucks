@@ -61,7 +61,7 @@ class NunjucksRendererSpec extends FreeSpec with MustMatchers
         whenReady(renderer.render("import-error.njk").failed) {
           case exception: PlayException =>
             exception.title must include("Template render error: (import-error.njk)")
-            exception.description mustEqual "Error: template not found: foo.njk"
+            exception.description must include("Error: template not found: foo.njk")
         }
       }
 

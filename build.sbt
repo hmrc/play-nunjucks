@@ -1,5 +1,6 @@
 import PlayCrossCompilation.{dependencies, version}
 import play.core.PlayVersion
+import sbt.Path.relativeTo
 
 val scala_2_11 = "2.11.12"
 val scala_2_12 = "2.12.8"
@@ -48,18 +49,9 @@ lazy val libDependencies: Seq[ModuleID] = dependencies(
 
     compile ++ test
   },
-  play25 = {
-    val test = Seq(
-      "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1"
-    ).map(_ % Test)
-    test
-  },
-  play26 = {
-    val test = Seq(
-      "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2"
-    )
-    test
-  }
+  play26 = Seq(
+    "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % "test"
+  )
 )
 
 (test in (lib.project, Test)) := {
@@ -82,11 +74,11 @@ lazy val itServer = (project in file("it-server"))
         "org.scalactic" %% "scalactic" % "3.0.7" % "test",
         "org.scalatest" %% "scalatest" % "3.0.7" % "test",
         "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
-        "org.pegdown" % "pegdown" % "1.6.0" % "test",
-        "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1" % "test"
+        "org.pegdown" % "pegdown" % "1.6.0" % "test"
       ),
       play26 = Seq(
-        "com.typesafe.play" %% "play-guice" % PlayVersion.current
+        "com.typesafe.play" %% "play-guice" % PlayVersion.current,
+        "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % "test"
       )
     ),
     Concat.groups := Seq(
