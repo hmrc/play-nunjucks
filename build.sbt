@@ -51,6 +51,9 @@ lazy val libDependencies: Seq[ModuleID] = dependencies(
   },
   play26 = Seq(
     "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % "test"
+  ),
+  play27 = Seq(
+    "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3" % "test"
   )
 )
 
@@ -64,7 +67,6 @@ lazy val itServer = (project in file("it-server"))
   .dependsOn(lib)
   .settings(inConfig(Test)(testSettings): _*)
   .settings(commonSettings: _*)
-  .settings(PlayCrossCompilation.itServerCrossCompilationSettings: _*)
   .settings(
     name := "it-server",
     libraryDependencies ++= PlayCrossCompilation.dependencies(
@@ -79,6 +81,10 @@ lazy val itServer = (project in file("it-server"))
       play26 = Seq(
         "com.typesafe.play" %% "play-guice" % PlayVersion.current,
         "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % "test"
+      ),
+      play27 = Seq(
+        "com.typesafe.play" %% "play-guice" % PlayVersion.current,
+        "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3" % "test"
       )
     ),
     Concat.groups := Seq(
