@@ -13,10 +13,9 @@ https://github.com/hmrc/play-nunjucks-viewmodel
 
 Add this to your AppDependencies / build.sbt
 
-> Note: at the moment `play-nunjucks-viewmodel` is published as a Play 2.6 library.
-
 ```sbt
-libraryDependencies += "uk.gov.hmrc" %% "play-nunjucks" % "x.y.z-play-26"
+// replace with play-26 if using on a Play 2.6 microservice
+libraryDependencies += "uk.gov.hmrc" %% "play-nunjucks" % "x.y.z-play-27"
 libraryDependencies += "uk.gov.hmrc" %% "play-nunjucks-viewmodel" % "x.y.z"
 ```
 

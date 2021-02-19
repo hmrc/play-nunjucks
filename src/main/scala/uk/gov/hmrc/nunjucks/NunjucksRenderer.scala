@@ -133,7 +133,7 @@ class NunjucksRenderer @Inject() (
   private val TemplateError =
     """(.*): \((.*)\)$""".r
 
-  private def visualisePlayException(e: Throwable): Html = e match {
+  private def visualisePlayException(e: Throwable)(implicit request: RequestHeader): Html = e match {
     case playException: PlayException => devError(
       playEditor = None,
       error = playException

@@ -7,7 +7,7 @@ templates in a [Play!](https://www.playframework.com/) web application.
 
 sbt
 ```scala
-libraryDependencies += "uk.gov.hmrc" %% "play-nunjucks" % "x.y.z-play-26"
+libraryDependencies += "uk.gov.hmrc" %% "play-nunjucks" % "x.y.z-play-27"
 ```
 
 ## Usage
