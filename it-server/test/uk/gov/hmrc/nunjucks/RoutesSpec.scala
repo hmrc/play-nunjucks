@@ -7,21 +7,29 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FreeSpec, MustMatchers, OptionValues}
 import play.api.{Environment, Mode}
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.mvc.RequestHeader
+import play.api.mvc.{AnyContentAsEmpty}
 import play.api.test.FakeRequest
+import play.api.test.Helpers._
 
 class RoutesSpec extends FreeSpec with MustMatchers
   with ScalaFutures with IntegrationPatience with OptionValues {
 
   "Routes" - {
 
-    implicit val request: RequestHeader = FakeRequest()
+    implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+
+    def buildRenderer(environment: Environment): NunjucksRenderer = {
+      lazy val app = GuiceApplicationBuilder(environment).build()
+
+      // force instantiation of the router, needed for correct prefixing of sub-routers in Play 2.7+
+      // as a result of this: https://github.com/playframework/playframework/pull/10030
+      route(app, request)
+
+      app.injector.instanceOf[NunjucksRenderer]
+    }
 
     "production routes helper" - {
-
-      lazy val app = GuiceApplicationBuilder(Environment.simple(mode = Mode.Prod))
-      lazy val renderer = app.injector.instanceOf[NunjucksRenderer]
-
+      lazy val renderer = buildRenderer(Environment.simple(mode = Mode.Prod))
       aRoutesHelper(renderer)
     }
 
@@ -39,8 +47,7 @@ class RoutesSpec extends FreeSpec with MustMatchers
         mode = Mode.Dev
       )
 
-      lazy val app = GuiceApplicationBuilder(environment)
-      lazy val renderer = app.injector.instanceOf[NunjucksRenderer]
+      lazy val renderer = buildRenderer(environment)
 
       aRoutesHelper(renderer)
     }

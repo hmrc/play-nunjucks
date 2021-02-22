@@ -174,3 +174,9 @@ It may be obscured amongst other logs when running locally but will
 be there. When this occurs in an MDTP environment, you should be
 able to find this among your application logs in Kibana with a
 relevant field `exception` and the stack trace therewithin.
+
+## Example server
+An it-server project has been included as a reference, providing an example page.
+You can see this in action by running the following command:
+```sbt
+PLAY_VERSION=2.7 sbt "project itServer" run
