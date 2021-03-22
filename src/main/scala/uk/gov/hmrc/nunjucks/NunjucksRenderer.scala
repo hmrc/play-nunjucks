@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.nunjucks
 
-
 import java.nio.file.Files
 import java.util.concurrent.{ExecutorService, Executors}
 
@@ -40,16 +39,15 @@ import scala.util.{Failure, Success, Try}
 
 @Singleton
 class NunjucksRenderer @Inject() (
-                                   setup: NunjucksSetup,
-                                   configuration: NunjucksConfiguration,
-                                   environment: Environment,
-                                   reverseRoutes: NunjucksRoutesHelper,
-                                   messagesApi: MessagesApi
-                                 ) {
+  setup: NunjucksSetup,
+  configuration: NunjucksConfiguration,
+  environment: Environment,
+  reverseRoutes: NunjucksRoutesHelper,
+  messagesApi: MessagesApi
+) {
 
-  private val threadPool: ExecutorService = {
+  private val threadPool: ExecutorService =
     Executors.newFixedThreadPool(configuration.threadCount)
-  }
 
   private val executionContext: ExecutionContext =
     ExecutionContext.fromExecutorService(threadPool)
@@ -77,15 +75,14 @@ class NunjucksRenderer @Inject() (
   private val scope = {
 
     val context = Context.enter()
-    val scope = context.initSafeStandardObjects(null, true)
+    val scope   = context.initSafeStandardObjects(null, true)
     scope.sealObject()
     Context.exit()
 
     scope
   }
 
-  def render(template: String, ctx: JsObject)(implicit request: RequestHeader): Future[Html] = {
-
+  def render(template: String, ctx: JsObject)(implicit request: RequestHeader): Future[Html] =
     Future {
 
       val context = Context.enter()
@@ -116,11 +113,9 @@ class NunjucksRenderer @Inject() (
           if (runningLocally) {
             Logger.error(s"An error was encountered while trying to render Nunjucks template: $template.", e)
             visualisePlayException(e)
-          }
-          else throw e
+          } else throw e
       }
     }(executionContext)
-  }
 
   def render(template: String)(implicit request: RequestHeader): Future[Html] =
     render(template, Json.obj())
@@ -130,64 +125,63 @@ class NunjucksRenderer @Inject() (
 
   private val TemplateErrorWithLocation =
     """(.*): \((.*)\) \[Line (\d+), Column (\d+)\]$""".r
-  private val TemplateError =
+  private val TemplateError             =
     """(.*): \((.*)\)$""".r
 
   private def visualisePlayException(e: Throwable)(implicit request: RequestHeader): Html = e match {
-    case playException: PlayException => devError(
-      playEditor = None,
-      error = playException
-    )
-    case _ => throw e
+    case playException: PlayException =>
+      devError(
+        playEditor = None,
+        error = playException
+      )
+    case _                            => throw e
   }
 
-  private def toPlayException[A](e: Throwable): Failure[A] = {
+  private def toPlayException[A](e: Throwable): Failure[A] =
     Failure {
       e match {
         case e: JavaScriptException =>
-
           def getSource(file: String): String =
             configuration.viewPaths
-            .flatMap(path => environment.resourceAsStream(s"$path/$file"))
-            .headOption
-            .map(Source.fromInputStream)
-            .map(_.mkString)
-            .getOrElse("")
+              .flatMap(path => environment.resourceAsStream(s"$path/$file"))
+              .headOption
+              .map(Source.fromInputStream)
+              .map(_.mkString)
+              .getOrElse("")
 
           val (first, stack) = e.details.splitAt(e.details.indexOf("\n"))
 
           first match {
             case TemplateErrorWithLocation(title, file, lpos, cpos) =>
               new PlayException.ExceptionSource(title, stack.trim, e) {
-                override def line(): Integer = lpos.toInt
-                override def position(): Integer = cpos.toInt
-                override def input(): String = getSource(file)
+                override def line(): Integer      = lpos.toInt
+                override def position(): Integer  = cpos.toInt
+                override def input(): String      = getSource(file)
                 override def sourceName(): String = file
               }
-            case TemplateError(_, _) =>
+            case TemplateError(_, _)                                =>
               new PlayException(first, stack.trim, e)
-            case _ =>
+            case _                                                  =>
               new RuntimeException(e.details, e)
           }
-        case e => e
+        case e                      => e
       }
     }
-  }
 }
 
 @Singleton
 class NunjucksSetup @Inject() (
-                                environment: Environment
-                              ) {
+  environment: Environment
+) {
 
   val (nodeModulesDir, workingDir, script, libDir) = {
 
     val tmpDir = File.newTemporaryDirectory("nunjucks").deleteOnExit()
 
     val nodeModulesTarName = "nodeModules.tar"
-    val tarStream = environment.resourceAsStream(nodeModulesTarName).get
-    val nodeModulesTar = File(tmpDir.path) / nodeModulesTarName
-    val nodeModulesDir = tmpDir / "node_modules"
+    val tarStream          = environment.resourceAsStream(nodeModulesTarName).get
+    val nodeModulesTar     = File(tmpDir.path) / nodeModulesTarName
+    val nodeModulesDir     = tmpDir / "node_modules"
     Files.copy(tarStream, nodeModulesTar.path)
     nodeModulesTar.unzipTo(tmpDir)
     Files.delete(nodeModulesTar.path)
@@ -195,7 +189,7 @@ class NunjucksSetup @Inject() (
     val scriptFile = File(tmpDir.path) / "nunjucks-bootstrap.js"
     Files.copy(environment.resourceAsStream("uk/gov/hmrc/nunjucks/nunjucks-bootstrap.js").get, scriptFile.path)
 
-    val libDir = tmpDir / "lib"
+    val libDir    = tmpDir / "lib"
     val extractor = new WebJarExtractor(environment.classLoader)
     extractor.extractAllWebJarsTo(libDir.toJava)
 

@@ -32,15 +32,15 @@ class PlayNodeEnvironment(customModules: Map[String, NodeModule]) extends NodeEn
     new PlayModuleRegistry(super.getRegistry(version), customModules)
 }
 
-class PlayModuleRegistry(registry: RootModuleRegistry, customModules: Map[String, NodeModule]) extends RootModuleRegistry(registry.getImplementation) {
+class PlayModuleRegistry(registry: RootModuleRegistry, customModules: Map[String, NodeModule])
+    extends RootModuleRegistry(registry.getImplementation) {
 
   private val modules: mutable.Map[String, NodeModule] =
     mutable.Map[String, NodeModule](customModules.toSeq: _*)
 
   private val internalModules: mutable.Map[String, InternalNodeModule] = mutable.Map.empty
-  private val compiledModules: mutable.Map[String, Script] = mutable.Map.empty
-  private val nativeModules: mutable.Map[String, NativeNodeModule] = mutable.Map.empty
-
+  private val compiledModules: mutable.Map[String, Script]             = mutable.Map.empty
+  private val nativeModules: mutable.Map[String, NativeNodeModule]     = mutable.Map.empty
 
   override def getImplementation: NodeImplementation =
     registry.getImplementation
