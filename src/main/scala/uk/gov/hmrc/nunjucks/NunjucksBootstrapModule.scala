@@ -32,7 +32,7 @@ class NunjucksBootstrapModule extends NodeModule {
 
     ScriptableObject.defineClass(global, classOf[NunjucksBootstrapModuleImpl])
 
-    val future = runtime.asInstanceOf[ScriptRunner].getFuture
+    val future  = runtime.asInstanceOf[ScriptRunner].getFuture
     val exports = cx.newObject(global, NunjucksBootstrapModuleImpl.className).asInstanceOf[NunjucksBootstrapModuleImpl]
 
     exports.future = future
@@ -58,7 +58,7 @@ object NunjucksBootstrapModuleImpl {
 
   @JSFunction
   def setReturnValue(cx: Context, thisObj: Scriptable, args: Array[AnyRef], func: JFunction): Unit = {
-    val self = thisObj.asInstanceOf[NunjucksBootstrapModuleImpl]
+    val self        = thisObj.asInstanceOf[NunjucksBootstrapModuleImpl]
     val returnValue = objArg(cx, thisObj, args, 0, classOf[Scriptable], true)
     self.future.setModuleResult(returnValue)
   }

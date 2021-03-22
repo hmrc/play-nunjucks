@@ -47,7 +47,8 @@ class NunjucksLoader extends ScriptableObject {
     val context = Context.getCurrentContext
 
     val configuration =
-      context.getThreadLocal("configuration")
+      context
+        .getThreadLocal("configuration")
         .asInstanceOf[NunjucksConfiguration]
 
     configuration.viewPaths
@@ -57,7 +58,8 @@ class NunjucksLoader extends ScriptableObject {
     val context = Context.getCurrentContext
 
     val configuration =
-      context.getThreadLocal("configuration")
+      context
+        .getThreadLocal("configuration")
         .asInstanceOf[NunjucksConfiguration]
 
     configuration.noCache
@@ -71,23 +73,24 @@ class NunjucksLoader extends ScriptableObject {
     val context = Context.getCurrentContext
 
     val environment =
-      context.getThreadLocal("environment")
-      .asInstanceOf[Environment]
+      context
+        .getThreadLocal("environment")
+        .asInstanceOf[Environment]
 
-    viewPaths.flatMap(path => environment.resourceAsStream(s"$path/$view"))
+    viewPaths
+      .flatMap(path => environment.resourceAsStream(s"$path/$view"))
       .headOption
       .map(Source.fromInputStream)
       .map(_.mkString)
-      .map {
-        content =>
+      .map { content =>
+        val obj = context.newObject(getParentScope)
+        obj.put("path", obj, view)
+        obj.put("src", obj, content)
+        obj.put("noCache", obj, noCache)
 
-          val obj = context.newObject(getParentScope)
-          obj.put("path", obj, view)
-          obj.put("src", obj, content)
-          obj.put("noCache", obj, noCache)
-
-          obj
-      }.orNull
+        obj
+      }
+      .orNull
   }
 }
 
@@ -95,4 +98,3 @@ object NunjucksLoader {
 
   val className = "_nunjucksScalaLoader"
 }
-

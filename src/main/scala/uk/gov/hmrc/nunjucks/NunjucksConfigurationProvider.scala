@@ -21,9 +21,9 @@ import play.api.Configuration
 
 @Singleton
 class NunjucksConfigurationProvider @Inject() (
-                                                configuration: Configuration,
-                                                setup: NunjucksSetup
-                                              ) extends Provider[NunjucksConfiguration] {
+  configuration: Configuration,
+  setup: NunjucksSetup
+) extends Provider[NunjucksConfiguration] {
 
   override def get(): NunjucksConfiguration = {
 
@@ -32,10 +32,10 @@ class NunjucksConfigurationProvider @Inject() (
 
     val libPaths = ("" :: configuration
       .getOptional[Seq[String]]("nunjucks.libPaths")
-      .getOrElse(Nil).toList)
-      .map {
-        dir =>
-          (setup.libDir / dir).pathAsString
+      .getOrElse(Nil)
+      .toList)
+      .map { dir =>
+        (setup.libDir / dir).pathAsString
       }
 
     val threadCount =
@@ -45,8 +45,8 @@ class NunjucksConfigurationProvider @Inject() (
       configuration.get[Boolean]("nunjucks.noCache")
 
     NunjucksConfiguration(
-      viewPaths   = viewPaths,
-      libPaths    = libPaths,
+      viewPaths = viewPaths,
+      libPaths = libPaths,
       threadCount = threadCount,
       noCache = noCache
     )

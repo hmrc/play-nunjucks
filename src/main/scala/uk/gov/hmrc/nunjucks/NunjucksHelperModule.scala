@@ -54,10 +54,12 @@ object NunjucksHelper {
   @JSFunction
   def messages(cx: Context, thisObj: Scriptable, args: Array[AnyRef], fn: JFunction): String = {
 
-    val request: RequestHeader = cx.getThreadLocal("request")
+    val request: RequestHeader = cx
+      .getThreadLocal("request")
       .asInstanceOf[RequestHeader]
 
-    val messagesApi: MessagesApi = cx.getThreadLocal("messagesApi")
+    val messagesApi: MessagesApi = cx
+      .getThreadLocal("messagesApi")
       .asInstanceOf[MessagesApi]
 
     val key = ArgUtils.stringArg(args, 0)
@@ -68,7 +70,8 @@ object NunjucksHelper {
   @JSFunction
   def csrf(cx: Context, thisObj: Scriptable, args: Array[AnyRef], fn: JFunction): String = {
 
-    val request: RequestHeader = cx.getThreadLocal("request")
+    val request: RequestHeader = cx
+      .getThreadLocal("request")
       .asInstanceOf[RequestHeader]
 
     CSRF.formField(request).toString
@@ -79,10 +82,12 @@ object NunjucksHelper {
 
     val cx = Context.getCurrentContext
 
-    val r: RequestHeader = cx.getThreadLocal("request")
+    val r: RequestHeader = cx
+      .getThreadLocal("request")
       .asInstanceOf[RequestHeader]
 
-    val messagesApi: MessagesApi = cx.getThreadLocal("messagesApi")
+    val messagesApi: MessagesApi = cx
+      .getThreadLocal("messagesApi")
       .asInstanceOf[MessagesApi]
 
     val language = messagesApi.preferred(r).lang.language
@@ -98,10 +103,12 @@ object NunjucksHelper {
 
     val cx = Context.getCurrentContext
 
-    val request: RequestHeader = cx.getThreadLocal("request")
+    val request: RequestHeader = cx
+      .getThreadLocal("request")
       .asInstanceOf[RequestHeader]
 
-    val reverseRoutes: NunjucksRoutesHelper = cx.getThreadLocal("reverseRoutes")
+    val reverseRoutes: NunjucksRoutesHelper = cx
+      .getThreadLocal("reverseRoutes")
       .asInstanceOf[NunjucksRoutesHelper]
 
     val script = JavaScriptReverseRouter("routes")(reverseRoutes.routes: _*)(request).toString
