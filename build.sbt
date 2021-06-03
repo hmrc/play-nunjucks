@@ -8,7 +8,7 @@ val scala_2_12 = "2.12.8"
 lazy val majorVersionNumber = 0
 
 lazy val lib = (project in file("."))
-  .enablePlugins(SbtWeb, SbtAutoBuildPlugin, SbtGitVersioning, SbtArtifactory)
+  .enablePlugins(SbtWeb)
   .settings(inConfig(Test)(testSettings): _*)
   .settings(commonSettings: _*)
   .settings(PlayCrossCompilation.playCrossCompilationSettings: _*)
@@ -107,7 +107,7 @@ lazy val testSettings: Seq[Def.Setting[_]] = Seq(
 lazy val commonSettings: Seq[Def.Setting[_]] = Seq(
   organization := "uk.gov.hmrc",
   majorVersion := majorVersionNumber,
-  makePublicallyAvailableOnBintray := true,
+  isPublicArtefact := true,
   scalaVersion := scala_2_11,
   crossScalaVersions := Seq(scala_2_11, scala_2_12),
   scalacOptions ++= (Seq(
@@ -117,9 +117,6 @@ lazy val commonSettings: Seq[Def.Setting[_]] = Seq(
     case _          => Seq("-Xfatal-warnings")
   }),
   resolvers ++= Seq(
-    Resolver.bintrayRepo("hmrc", "releases"),
-    Resolver.bintrayRepo("hmrc", "snapshots"),
-    Resolver.bintrayRepo("hmrc", "release-candidates"),
     Resolver.typesafeRepo("releases"),
     Resolver.jcenterRepo
   )
