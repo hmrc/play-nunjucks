@@ -1,8 +1,8 @@
-resolvers += Resolver.jcenterRepo
 resolvers += MavenRepository("HMRC-open-artefacts-maven2", "https://open.artefacts.tax.service.gov.uk/maven2")
 resolvers += Resolver.url("HMRC-open-artefacts-ivy2", url("https://open.artefacts.tax.service.gov.uk/ivy2"))(
   Resolver.ivyStylePatterns
 )
+
 (managedSources in Compile) += (baseDirectory.value / "project" / "PlayCrossCompilation.scala")
 
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % PlayCrossCompilation.version)

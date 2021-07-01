@@ -76,6 +76,31 @@ The output json will be the following:
 }
 ```
 
+Please be aware that this helper does not handle [nested form values](https://www.playframework.com/documentation/2.8.x/ScalaForms#Nested-values). If you have a form constraint on a
+composite field, you will need to either implement an alternative OWrites[Form[_]] or
+remap the form error keys before passing to your Nunjucks template to ensure the correct error links are emitted
+as per [GDS guidance](https://design-system.service.gov.uk/components/error-summary/).
+
+For example, if you have a form that uses the `DateInput` view model from [play-nunjucks-viewmodel](https://github.com/hmrc/play-nunjucks-viewmodel),
+and wish to perform validation on the `date.day` field, you will need to remap any form errors on the 
+`date.day` field to the `date` field because in the DateInput viewmodel, the day text input has an id corresponding to the
+`date` field rather than the `date.day` field.
+
+Such a workaround might look something like this:
+
+```scala
+renderer.render(
+  template = "template.njk",
+  ctx = Json.obj(
+    "form"       -> formWithErrors.copy(
+      errors = formWithErrors.errors map { e => 
+        if (e.key == "date.day") e.copy(key = "date") else e 
+      }
+    )
+  )
+).map(BadRequest(_))
+```
+
 ### Built in helpers
 
 There are some features of Play! that are really useful to be
