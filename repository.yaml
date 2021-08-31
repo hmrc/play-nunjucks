@@ -1,6 +1,6 @@
 repoVisibility: public_0C3F0CE3E6E6448FAD341E7BFA50FCD333E06A20CFF05FCACE61154DDBBADF71
 
 leakDetectionExemptions:
-  - ruleId: 'play_crypto_secret'
+  - ruleId: 'play_http_secret_key'
     filePaths:
-      - '/it-server/conf-play-25/application.conf'
+      - '/it-server/conf/application.conf'

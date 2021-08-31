@@ -45,6 +45,7 @@ class NunjucksRenderer @Inject() (
   reverseRoutes: NunjucksRoutesHelper,
   messagesApi: MessagesApi
 ) {
+  private val logger: Logger = Logger(this.getClass)
 
   private val threadPool: ExecutorService =
     Executors.newFixedThreadPool(configuration.threadCount)
@@ -111,7 +112,7 @@ class NunjucksRenderer @Inject() (
         case Failure(e) =>
           lazy val runningLocally: Boolean = environment.mode.equals(Mode.Dev)
           if (runningLocally) {
-            Logger.error(s"An error was encountered while trying to render Nunjucks template: $template.", e)
+            logger.error(s"An error was encountered while trying to render Nunjucks template: $template.", e)
             visualisePlayException(e)
           } else throw e
       }

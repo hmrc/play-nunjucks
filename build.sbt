@@ -2,9 +2,6 @@ import PlayCrossCompilation.{dependencies, version}
 import play.core.PlayVersion
 import sbt.Path.relativeTo
 
-val scala_2_11 = "2.11.12"
-val scala_2_12 = "2.12.8"
-
 lazy val majorVersionNumber = 0
 
 lazy val lib = (project in file("."))
@@ -39,12 +36,13 @@ lazy val libDependencies: Seq[ModuleID] = dependencies(
     )
 
     val test = Seq(
-      "com.typesafe.play" %% "play-test"  % version,
-      "org.scalactic"     %% "scalactic"  % "3.0.7",
-      "org.scalatest"     %% "scalatest"  % "3.0.7",
-      "org.scalacheck"    %% "scalacheck" % "1.14.0",
-      "org.scalamock"     %% "scalamock"  % "4.1.0",
-      "org.pegdown"        % "pegdown"    % "1.6.0"
+      "com.typesafe.play"   %% "play-test"    % version,
+      "org.scalactic"       %% "scalactic"    % "3.0.7",
+      "org.scalatest"       %% "scalatest"    % "3.0.7",
+      "org.scalacheck"      %% "scalacheck"   % "1.14.0",
+      "org.scalamock"       %% "scalamock"    % "4.1.0",
+      "org.pegdown"          % "pegdown"      % "1.6.0",
+      "com.vladsch.flexmark" % "flexmark-all" % "0.35.10"
     ).map(_ % Test)
 
     compile ++ test
@@ -54,6 +52,9 @@ lazy val libDependencies: Seq[ModuleID] = dependencies(
   ),
   play27 = Seq(
     "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3" % "test"
+  ),
+  play28 = Seq(
+    "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % "test"
   )
 )
 
@@ -72,11 +73,12 @@ lazy val itServer = (project in file("it-server"))
     libraryDependencies ++= PlayCrossCompilation.dependencies(
       shared = Seq(
         filters,
-        "org.webjars.npm" % "govuk-frontend" % "3.3.0",
-        "org.scalactic"  %% "scalactic"      % "3.0.7"  % "test",
-        "org.scalatest"  %% "scalatest"      % "3.0.7"  % "test",
-        "org.scalacheck" %% "scalacheck"     % "1.14.0" % "test",
-        "org.pegdown"     % "pegdown"        % "1.6.0"  % "test"
+        "org.webjars.npm"      % "govuk-frontend" % "3.3.0",
+        "org.scalactic"       %% "scalactic"      % "3.0.7"   % "test",
+        "org.scalatest"       %% "scalatest"      % "3.0.7"   % "test",
+        "org.scalacheck"      %% "scalacheck"     % "1.14.0"  % "test",
+        "org.pegdown"          % "pegdown"        % "1.6.0"   % "test",
+        "com.vladsch.flexmark" % "flexmark-all"   % "0.35.10" % "test"
       ),
       play26 = Seq(
         "com.typesafe.play"      %% "play-guice"         % PlayVersion.current,
@@ -85,6 +87,10 @@ lazy val itServer = (project in file("it-server"))
       play27 = Seq(
         "com.typesafe.play"      %% "play-guice"         % PlayVersion.current,
         "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3" % "test"
+      ),
+      play28 = Seq(
+        "com.typesafe.play"      %% "play-guice"         % PlayVersion.current,
+        "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % "test"
       )
     ),
     Concat.groups := Seq(
@@ -108,14 +114,7 @@ lazy val commonSettings: Seq[Def.Setting[_]] = Seq(
   organization := "uk.gov.hmrc",
   majorVersion := majorVersionNumber,
   isPublicArtefact := true,
-  scalaVersion := scala_2_11,
-  crossScalaVersions := Seq(scala_2_11, scala_2_12),
-  scalacOptions ++= (Seq(
-    "-deprecation"
-  ) ++ CrossVersion.partialVersion(scalaVersion.value) match {
-    case scala_2_12 => Nil
-    case _          => Seq("-Xfatal-warnings")
-  }),
+  scalaVersion := "2.12.8",
   resolvers ++= Seq(
     Resolver.typesafeRepo("releases"),
     Resolver.jcenterRepo
