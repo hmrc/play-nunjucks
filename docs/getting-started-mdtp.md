@@ -67,8 +67,8 @@ Views are treated as resources by the nunjucks library, rather than being compil
 So your views should live in the `conf/views` directory, not under `app/views`.
     
 You can see an example of a typical “layout” file (equivalent of the “main template” in a Twirl service) in the it-server
- project in the viewmodel repo: https://github.com/hmrc/play-nunjucks-viewmodel/tree/master/it-server/conf/views/includes
- and an example of a page  in the same repo, e.g.: https://github.com/hmrc/play-nunjucks-viewmodel/blob/master/it-server/conf/views/yesNo.njk
+ project in the viewmodel repo: https://github.com/hmrc/play-nunjucks-viewmodel/tree/main/it-server/conf/views/includes
+ and an example of a page  in the same repo, e.g.: https://github.com/hmrc/play-nunjucks-viewmodel/blob/main/it-server/conf/views/yesNo.njk
 
 #### Render views from a controller
 
