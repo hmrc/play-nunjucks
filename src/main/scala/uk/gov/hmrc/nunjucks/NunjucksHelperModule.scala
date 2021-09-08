@@ -19,7 +19,7 @@ package uk.gov.hmrc.nunjucks
 import io.apigee.trireme.core.{ArgUtils, NodeModule, NodeRuntime}
 import org.mozilla.javascript.annotations.{JSFunction, JSGetter}
 import org.mozilla.javascript.{Context, Scriptable, ScriptableObject, Function => JFunction}
-import play.api.i18n.{I18nSupport, Messages, MessagesApi}
+import play.api.i18n.MessagesApi
 import play.api.mvc.RequestHeader
 import play.api.routing.JavaScriptReverseRouter
 import views.html.helper.CSRF

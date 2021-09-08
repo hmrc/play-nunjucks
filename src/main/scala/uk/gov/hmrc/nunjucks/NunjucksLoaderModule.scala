@@ -19,7 +19,7 @@ package uk.gov.hmrc.nunjucks
 import io.apigee.trireme.core.{NodeModule, NodeRuntime}
 import org.mozilla.javascript.annotations.JSFunction
 import org.mozilla.javascript.{Context, Scriptable, ScriptableObject}
-import play.api.{Configuration, Environment}
+import play.api.Environment
 
 import scala.io.Source
 
