@@ -1,8 +1,11 @@
 import PlayCrossCompilation.{dependencies, version}
 import play.core.PlayVersion
 import sbt.Path.relativeTo
+import scala.sys.process._
 
 lazy val majorVersionNumber = 0
+
+val npmTest = TaskKey[Unit]("npm-test")
 
 lazy val lib = (project in file("."))
   .enablePlugins(SbtWeb)
@@ -19,7 +22,14 @@ lazy val lib = (project in file("."))
       IO.zip(filesToZip, zipFile)
       Seq(zipFile)
     }.taskValue,
-    coverageExcludedPackages := "<empty>;uk.gov.hmrc.BuildInfo;uk.gov.hmrc.nunjucks.PlayModuleRegistry"
+    coverageExcludedPackages := "<empty>;uk.gov.hmrc.BuildInfo;uk.gov.hmrc.nunjucks.PlayModuleRegistry",
+    npmTest := {
+      val exitCode = ("npm install" #&& "npm test").!
+      if (exitCode != 0) {
+        throw new MessageOnlyException("npm install and test failed")
+      }
+    },
+    (test in Test) := (test in Test).dependsOn(npmTest).value
   )
 
 lazy val libDependencies: Seq[ModuleID] = dependencies(

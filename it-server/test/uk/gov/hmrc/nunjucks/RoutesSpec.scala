@@ -29,8 +29,7 @@ import play.api.{Environment, Mode}
 
 import java.net.URLClassLoader
 
-class RoutesSpec extends FreeSpec with MustMatchers
-  with ScalaFutures with IntegrationPatience with OptionValues {
+class RoutesSpec extends FreeSpec with MustMatchers with ScalaFutures with IntegrationPatience with OptionValues {
 
   "Routes" - {
 
@@ -98,10 +97,16 @@ class RoutesSpec extends FreeSpec with MustMatchers
       // break routes on the same controller in different batches
       val routesHelper = new NunjucksRoutesHelper {
         override val routes: Seq[JavaScriptReverseRoute] =
-          JavaScriptReverseRoute("controllers.TestController.one", """function() { return _wA({method: "GET", url: "/" + "one"}) }""") ::
-          (0 to 1000).map(i => JavaScriptReverseRoute(i.toString, i.toString)).toList :::
-          JavaScriptReverseRoute("controllers.TestController.two", """function() { return _wA({method: "GET", url: "/" + "two"}) }""") ::
-          Nil
+          JavaScriptReverseRoute(
+            "controllers.TestController.one",
+            """function() { return _wA({method: "GET", url: "/" + "one"}) }"""
+          ) ::
+            (0 to 1000).map(i => JavaScriptReverseRoute(i.toString, i.toString)).toList :::
+            JavaScriptReverseRoute(
+              "controllers.TestController.two",
+              """function() { return _wA({method: "GET", url: "/" + "two"}) }"""
+            ) ::
+            Nil
       }
 
       lazy val app = GuiceApplicationBuilder()
