@@ -129,7 +129,6 @@ globally under the `routes` object in Nunjucks templates. For example:
 ```nunjucks
 <a href="{{ routes.controllers.MyController.myEndpoint().url }}">my link</a>
 ```
-
 ##### CSRF Helper
 
 Play has built in CSRF support which means that if you have a form
@@ -205,3 +204,46 @@ An it-server project has been included as a reference, providing an example page
 You can see this in action by running the following command:
 ```sbt
 PLAY_VERSION=2.7 sbt "project itServer" run
+```
+
+## Issue with high numbers of routes causing `ArrayIndexOutOfBoundsException`
+
+The routes object referenced in the Routes helper section above is implemented as a Rhino 
+[JSFunction](https://mozilla.github.io/rhino/javadoc/index.html?org/mozilla/javascript/annotations/JSFunction.html) in
+[NunjucksHelperModule](src/main/scala/uk/gov/hmrc/nunjucks/NunjucksHelperModule.scala) and
+has a little complexity behind it.
+
+It relies on play-nunjucks determining a list of `JavaScriptReverseRoute` instances
+using reflection in [NunjucksRoutesHelper](src/main/scala/uk/gov/hmrc/nunjucks/NunjucksRoutesHelper.scala)
+This `Seq` is passed to Play's `JavaScriptReverseRouter` as documented 
+[here](https://www.playframework.com/documentation/2.8.x/ScalaJavascriptRouting). This
+sequence is evaluated lazily within a singleton object.
+
+In September 2021 we discovered a bug causing an `ArrayIndexOutOfBoundsException` within
+[org.mozilla.classfile.ClassFileWriter$StackMapTable.executeBlock](https://github.com/mozilla/rhino/blob/master/src/org/mozilla/classfile/ClassFileWriter.java#L1728)
+that appeared to affect
+frontend microservices with high numbers of routes. This appeared to be being caused
+by the large size of the `JavaScriptReverseRouter` script, that in some cases exceeded 
+3,500 lines of Javascript code. A similar [issue](https://github.com/mozilla/rhino/issues/529) in Rhino was 
+reported in March 2019 and [fixed](https://github.com/mozilla/rhino/pull/628)
+in December 2019 in [1.7.12](https://github.com/mozilla/rhino/releases/tag/Rhino1_7_12_Release)
+However, it's not possible to use this version because Trireme pins Rhino to 1.7.10.
+
+As a workaround, the code in NunjucksHelperModule was modified to build up the routes 
+object incrementally by creating and executing multiple JavaScriptReverseRouter scripts containing
+batches of 100 routes while deep merging the partial results to obtain the final routes object.
+There is an [integration test](it-server/test/uk/gov/hmrc/nunjucks/RoutesSpec.scala)
+that demonstrates that the usage of the mergeDeep function preserves
+routes at the beginning and end of the routes array.
+
+Maintainers should consider as a future improvement increasing the test coverage for the routes helper 
+to cover more examples and edge cases. Additionally, it's worth considering extracting the inline mergeDeep Javascript 
+function as a separate Node module to allow it to be independently
+tested using a Javascript test runner such as Jest.
+
+Service developers should be aware that this workaround that may have performance implications for your
+service and there may be further edge cases that this solution does not cover. 
+
+If your service has a high number of routes and experiences this or a related issue, it's worth
+considering whether it's possible to reduce the number of routes via consolidation or potentially
+split the frontend microservice into multiple microservices.
