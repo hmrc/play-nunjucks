@@ -16,16 +16,18 @@
 
 package uk.gov.hmrc.nunjucks
 
-import java.net.URLClassLoader
-
 import better.files._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FreeSpec, MustMatchers, OptionValues}
-import play.api.{Environment, Mode}
+import play.api.inject._
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.mvc.{AnyContentAsEmpty}
+import play.api.mvc.AnyContentAsEmpty
+import play.api.routing.JavaScriptReverseRoute
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import play.api.{Environment, Mode}
+
+import java.net.URLClassLoader
 
 class RoutesSpec extends FreeSpec with MustMatchers
   with ScalaFutures with IntegrationPatience with OptionValues {
@@ -87,6 +89,32 @@ class RoutesSpec extends FreeSpec with MustMatchers
         val result = renderer.render("routes-sub.njk").futureValue
         result.toString mustEqual "/sub/ok"
       }
+    }
+
+    "must not fail when there are a large number of routes" in {
+
+      // here we include routes at the beginning and end because they will end up in
+      // different batches, this proves that the merging doesn't
+      // break routes on the same controller in different batches
+      val routesHelper = new NunjucksRoutesHelper {
+        override val routes: Seq[JavaScriptReverseRoute] =
+          JavaScriptReverseRoute("controllers.TestController.one", """function() { return _wA({method: "GET", url: "/" + "one"}) }""") ::
+          (0 to 1000).map(i => JavaScriptReverseRoute(i.toString, i.toString)).toList :::
+          JavaScriptReverseRoute("controllers.TestController.two", """function() { return _wA({method: "GET", url: "/" + "two"}) }""") ::
+          Nil
+      }
+
+      lazy val app = GuiceApplicationBuilder()
+        .overrides(
+          bind[NunjucksRoutesHelper].toInstance(routesHelper)
+        )
+        .build()
+
+      route(app, request)
+      val renderer = app.injector.instanceOf[NunjucksRenderer]
+
+      val result = renderer.render("lots-of-routes.njk").futureValue
+      result.toString mustEqual "/one\n/two"
     }
   }
 }

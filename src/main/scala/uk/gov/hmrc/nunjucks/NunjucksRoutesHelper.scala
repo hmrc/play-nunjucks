@@ -16,13 +16,12 @@
 
 package uk.gov.hmrc.nunjucks
 
-import java.net.{URL, URLClassLoader}
-
 import better.files._
-import javax.inject.{Inject, Singleton}
-import play.api.{Environment, Logger}
+import play.api.Environment
 import play.api.routing.JavaScriptReverseRoute
 
+import java.net.URLClassLoader
+import javax.inject.{Inject, Singleton}
 import scala.util.Try
 
 trait NunjucksRoutesHelper {

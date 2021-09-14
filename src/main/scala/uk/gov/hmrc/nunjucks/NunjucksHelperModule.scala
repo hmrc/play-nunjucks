@@ -19,7 +19,7 @@ package uk.gov.hmrc.nunjucks
 import io.apigee.trireme.core.{ArgUtils, NodeModule, NodeRuntime}
 import org.mozilla.javascript.annotations.{JSFunction, JSGetter}
 import org.mozilla.javascript.{Context, Scriptable, ScriptableObject, Function => JFunction}
-import play.api.i18n.{I18nSupport, Messages, MessagesApi}
+import play.api.i18n.MessagesApi
 import play.api.mvc.RequestHeader
 import play.api.routing.JavaScriptReverseRouter
 import views.html.helper.CSRF
@@ -50,6 +50,35 @@ class NunjucksHelper extends ScriptableObject {
 object NunjucksHelper {
 
   val className = "_nunjucksHelper"
+
+  private val routesInitScript =
+    """
+      |var routes = {};
+      |
+      |function isObject(item) {
+      |  return (item && typeof item === 'object' && !Array.isArray(item));
+      |}
+      |
+      |function mergeDeep(target, source) {
+      |
+      |  for (var key in source) {
+      |    if (isObject(source[key])) {
+      |      if (!target[key]) {
+      |        var obj = {};
+      |        obj[key] = {};
+      |        Object.assign(target, obj);
+      |      }
+      |      mergeDeep(target[key], source[key]);
+      |    } else {
+      |      var obj = {};
+      |      obj[key] = source[key];
+      |      Object.assign(target, obj);
+      |    }
+      |  }
+      |
+      |  return target;
+      |}
+      |""".stripMargin
 
   @JSFunction
   def messages(cx: Context, thisObj: Scriptable, args: Array[AnyRef], fn: JFunction): String = {
@@ -107,13 +136,26 @@ object NunjucksHelper {
       .getThreadLocal("request")
       .asInstanceOf[RequestHeader]
 
-    val reverseRoutes: NunjucksRoutesHelper = cx
+    val routesHelper: NunjucksRoutesHelper = cx
       .getThreadLocal("reverseRoutes")
       .asInstanceOf[NunjucksRoutesHelper]
 
-    val script = JavaScriptReverseRouter("routes")(reverseRoutes.routes: _*)(request).toString
+    val scope = {
+      val context = Context.enter()
+      val scope   = context.initSafeStandardObjects(null, true)
+      Context.exit()
+      scope
+    }
 
-    cx.evaluateString(thisObj.getParentScope, s"(function () { $script; return routes; })();", "routes", 0, null)
+    cx.evaluateString(scope, routesInitScript, "init_routes", 0, null)
+
+    // we need to batch routes as trireme fails to run the script if it's too large
+    routesHelper.routes.sliding(100).foreach { batch =>
+      val script = JavaScriptReverseRouter("batch")(batch: _*)(request).toString
+      cx.evaluateString(scope, s"(function () { $script; mergeDeep(routes, batch); })();", "batch", 0, null);
+    }
+
+    cx.evaluateString(scope, "routes", "routes", 0, null)
       .asInstanceOf[Scriptable]
   }
 }
