@@ -20,5 +20,6 @@ final case class NunjucksConfiguration(
   viewPaths: Seq[String],
   libPaths: Seq[String],
   threadCount: Int,
-  noCache: Boolean
+  noCache: Boolean,
+  routesBatchSize: Int
 )
