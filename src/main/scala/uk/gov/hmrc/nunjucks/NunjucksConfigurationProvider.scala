@@ -44,11 +44,15 @@ class NunjucksConfigurationProvider @Inject() (
     val noCache =
       configuration.get[Boolean]("nunjucks.noCache")
 
+    val routesBatchSize =
+      configuration.get[Int]("nunjucks.routesBatchSize")
+
     NunjucksConfiguration(
       viewPaths = viewPaths,
       libPaths = libPaths,
       threadCount = threadCount,
-      noCache = noCache
+      noCache = noCache,
+      routesBatchSize = routesBatchSize
     )
   }
 }
