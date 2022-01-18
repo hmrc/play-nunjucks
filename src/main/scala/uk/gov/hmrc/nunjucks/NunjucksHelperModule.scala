@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -123,6 +123,9 @@ object NunjucksHelper {
 
     val requestObject = cx.newObject(thisObj)
     ScriptableObject.putProperty(requestObject, "language", language)
+    ScriptableObject.putProperty(requestObject, "path", r.path)
+    ScriptableObject.putProperty(requestObject, "uri", r.uri)
+    ScriptableObject.putProperty(requestObject, "rawQueryString", r.rawQueryString)
 
     requestObject
   }
