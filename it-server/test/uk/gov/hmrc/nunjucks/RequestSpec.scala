@@ -47,5 +47,32 @@ class RequestSpec extends FreeSpec with MustMatchers
 
       result.toString mustEqual "cy"
     }
+
+    "must include the current path" in {
+
+      val request = FakeRequest("GET", "foobar?a=b")
+
+      val result = renderer.render("request-path.njk")(request).futureValue
+
+      result.toString mustEqual "foobar"
+    }
+
+    "must include the current uri" in {
+
+      val request = FakeRequest("GET", "foobar?a=b")
+
+      val result = renderer.render("request-uri.njk")(request).futureValue
+
+      result.toString mustEqual "foobar?a=b"
+    }
+
+    "must include the raw query string" in {
+
+      val request = FakeRequest("GET", "foobar?a=b")
+
+      val result = renderer.render("request-raw-query-string.njk")(request).futureValue
+
+      result.toString mustEqual "a=b"
+    }
   }
 }

@@ -123,6 +123,9 @@ object NunjucksHelper {
 
     val requestObject = cx.newObject(thisObj)
     ScriptableObject.putProperty(requestObject, "language", language)
+    ScriptableObject.putProperty(requestObject, "path", r.path)
+    ScriptableObject.putProperty(requestObject, "uri", r.uri)
+    ScriptableObject.putProperty(requestObject, "rawQueryString", r.rawQueryString)
 
     requestObject
   }
