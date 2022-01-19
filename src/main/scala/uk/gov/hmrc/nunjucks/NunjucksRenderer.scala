@@ -16,23 +16,21 @@
 
 package uk.gov.hmrc.nunjucks
 
-import java.nio.file.Files
-import java.util.concurrent.{ExecutorService, Executors}
-
 import better.files.File
 import io.apigee.trireme.core.{NodeModule, Sandbox}
-import javax.inject.{Inject, Singleton}
 import org.mozilla.javascript.json.JsonParser
-import org.mozilla.javascript.{Context, JavaScriptException, Function => JFunction}
+import org.mozilla.javascript.{Context, JavaScriptException, Scriptable, ScriptableObject, Function => JFunction}
 import org.webjars.WebJarExtractor
 import play.api.i18n.MessagesApi
 import play.api.libs.json.{JsObject, Json, OWrites}
-import play.api.Logger
 import play.api.mvc.RequestHeader
-import play.api.{Environment, Mode, PlayException}
+import play.api._
 import play.twirl.api.Html
 import views.html.defaultpages.devError
 
+import java.nio.file.Files
+import java.util.concurrent.{ExecutorService, Executors}
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Source
 import scala.util.{Failure, Success, Try}
@@ -41,6 +39,7 @@ import scala.util.{Failure, Success, Try}
 class NunjucksRenderer @Inject() (
   setup: NunjucksSetup,
   configuration: NunjucksConfiguration,
+  config: Configuration,
   environment: Environment,
   reverseRoutes: NunjucksRoutesHelper,
   messagesApi: MessagesApi
@@ -83,11 +82,25 @@ class NunjucksRenderer @Inject() (
     scope
   }
 
+  private val globals: Option[Scriptable] = {
+    val cx      = Context.enter()
+    val globals = config.getOptional[Configuration]("nunjucks.globals").map { configBlock =>
+      val globalsObject = cx.newObject(scope)
+      configBlock.entrySet.foreach { case (k, v) =>
+        ScriptableObject.putProperty(globalsObject, k, v.unwrapped.toString)
+      }
+      globalsObject
+    }
+    Context.exit()
+    globals
+  }
+
   def render(template: String, ctx: JsObject)(implicit request: RequestHeader): Future[Html] =
     Future {
 
       val context = Context.enter()
 
+      globals.foreach(context.putThreadLocal("globals", _))
       context.putThreadLocal("configuration", configuration)
       context.putThreadLocal("environment", environment)
       context.putThreadLocal("messagesApi", messagesApi)
@@ -104,6 +117,7 @@ class NunjucksRenderer @Inject() (
       context.removeThreadLocal("messagesApi")
       context.removeThreadLocal("reverseRoutes")
       context.removeThreadLocal("request")
+      globals.foreach(_ => context.removeThreadLocal("globals"))
 
       Context.exit()
 
@@ -155,9 +169,12 @@ class NunjucksRenderer @Inject() (
           first match {
             case TemplateErrorWithLocation(title, file, lpos, cpos) =>
               new PlayException.ExceptionSource(title, stack.trim, e) {
-                override def line(): Integer      = lpos.toInt
-                override def position(): Integer  = cpos.toInt
-                override def input(): String      = getSource(file)
+                override def line(): Integer = lpos.toInt
+
+                override def position(): Integer = cpos.toInt
+
+                override def input(): String = getSource(file)
+
                 override def sourceName(): String = file
               }
             case TemplateError(_, _)                                =>
