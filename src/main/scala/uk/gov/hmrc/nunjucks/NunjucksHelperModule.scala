@@ -165,4 +165,10 @@ object NunjucksHelper {
     cx.evaluateString(scope, "routes", "routes", 0, null)
       .asInstanceOf[Scriptable]
   }
+
+  @JSGetter("globals")
+  def config(thisObj: ScriptableObject): Scriptable =
+    Context.getCurrentContext
+      .getThreadLocal("globals")
+      .asInstanceOf[Scriptable]
 }

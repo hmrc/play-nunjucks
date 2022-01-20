@@ -14,6 +14,7 @@ env.addGlobal("csrf", helpers.csrf);
 function render(view, context) {
   env.addGlobal("routes", helpers.routes);
   env.addGlobal("request", helpers.request);
+  env.addGlobal("globals", helpers.globals);
   return env.render(view, context);
 }
 
