@@ -16,7 +16,9 @@
 
 package uk.gov.hmrc.nunjucks
 
-import org.scalatest.{FreeSpec, MustMatchers, OptionValues}
+import org.scalatest.OptionValues
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.data._
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
@@ -24,7 +26,7 @@ import play.api.libs.json.{JsNull, Json}
 import play.api.mvc.RequestHeader
 import play.api.test.FakeRequest
 
-class NunjucksSupportSpec extends FreeSpec with MustMatchers
+class NunjucksSupportSpec extends AnyFreeSpec with Matchers
   with GuiceOneAppPerSuite with OptionValues {
 
   val form = Form(

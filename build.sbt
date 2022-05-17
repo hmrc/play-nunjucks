@@ -28,7 +28,7 @@ lazy val libDependencies: Seq[ModuleID] = dependencies(
     val compile = Seq(
       "com.typesafe.play"    %% "play"                 % version % "provided",
       "com.typesafe.play"    %% "filters-helpers"      % version % "provided",
-      "com.github.pathikrit" %% "better-files"         % "3.5.0",
+      "com.github.pathikrit" %% "better-files"         % "3.9.1",
       "io.apigee.trireme"     % "trireme-core"         % "0.9.4",
       "io.apigee.trireme"     % "trireme-kernel"       % "0.9.4",
       "io.apigee.trireme"     % "trireme-node12src"    % "0.9.4",
@@ -37,10 +37,10 @@ lazy val libDependencies: Seq[ModuleID] = dependencies(
 
     val test = Seq(
       "com.typesafe.play"   %% "play-test"    % version,
-      "org.scalactic"       %% "scalactic"    % "3.0.7",
-      "org.scalatest"       %% "scalatest"    % "3.0.7",
+      "org.scalactic"       %% "scalactic"    % "3.2.3",
+      "org.scalatest"       %% "scalatest"    % "3.2.3",
       "org.scalacheck"      %% "scalacheck"   % "1.14.0",
-      "org.scalamock"       %% "scalamock"    % "4.1.0",
+      "org.scalamock"       %% "scalamock"    % "4.3.0",
       "org.pegdown"          % "pegdown"      % "1.6.0",
       "com.vladsch.flexmark" % "flexmark-all" % "0.35.10"
     ).map(_ % Test)
@@ -74,8 +74,8 @@ lazy val itServer = (project in file("it-server"))
       shared = Seq(
         filters,
         "org.webjars.npm"      % "govuk-frontend" % "3.3.0",
-        "org.scalactic"       %% "scalactic"      % "3.0.7"   % "test",
-        "org.scalatest"       %% "scalatest"      % "3.0.7"   % "test",
+        "org.scalactic"       %% "scalactic"      % "3.2.3"   % "test",
+        "org.scalatest"       %% "scalatest"      % "3.2.3"   % "test",
         "org.scalacheck"      %% "scalacheck"     % "1.14.0"  % "test",
         "org.pegdown"          % "pegdown"        % "1.6.0"   % "test",
         "com.vladsch.flexmark" % "flexmark-all"   % "0.35.10" % "test"
@@ -110,11 +110,15 @@ lazy val testSettings: Seq[Def.Setting[_]] = Seq(
   )
 )
 
+val scala2_12 = "2.12.8"
+val scala2_13 = "2.13.7"
+
 lazy val commonSettings: Seq[Def.Setting[_]] = Seq(
   organization := "uk.gov.hmrc",
   majorVersion := majorVersionNumber,
   isPublicArtefact := true,
-  scalaVersion := "2.12.8",
+  scalaVersion := scala2_12,
+  crossScalaVersions := Seq(scala2_12, scala2_13),
   resolvers ++= Seq(
     Resolver.typesafeRepo("releases"),
     Resolver.jcenterRepo

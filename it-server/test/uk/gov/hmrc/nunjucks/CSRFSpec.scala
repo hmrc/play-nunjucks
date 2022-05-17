@@ -16,8 +16,10 @@
 
 package uk.gov.hmrc.nunjucks
 
+import org.scalatest.OptionValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.{FreeSpec, MustMatchers, OptionValues}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.must.Matchers
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.CSRFTokenHelper._
 import play.api.test.FakeRequest
@@ -25,7 +27,7 @@ import play.filters.csrf.CSRF
 
 import scala.xml.XML
 
-class CSRFSpec extends FreeSpec with MustMatchers
+class CSRFSpec extends AnyFreeSpec with Matchers
   with ScalaFutures with IntegrationPatience with OptionValues {
 
   "CSRF" - {
