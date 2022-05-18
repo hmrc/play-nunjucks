@@ -16,13 +16,15 @@
 
 package uk.gov.hmrc.nunjucks
 
+import org.scalatest.OptionValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.{FreeSpec, MustMatchers, OptionValues}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.must.Matchers
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc._
 import play.api.test.FakeRequest
 
-class RequestSpec extends FreeSpec with MustMatchers
+class RequestSpec extends AnyFreeSpec with Matchers
   with ScalaFutures with IntegrationPatience with OptionValues {
 
   "Request" - {

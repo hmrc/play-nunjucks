@@ -25,13 +25,13 @@ import javax.inject.{Inject, Singleton}
 import scala.util.Try
 
 trait NunjucksRoutesHelper {
-  def routes: Seq[JavaScriptReverseRoute]
+  def routes: scala.collection.immutable.Seq[JavaScriptReverseRoute]
 }
 
 @Singleton
 class ProductionNunjucksRoutesHelper @Inject() extends NunjucksRoutesHelper {
 
-  lazy val routes: Seq[JavaScriptReverseRoute] =
+  lazy val routes: scala.collection.immutable.Seq[JavaScriptReverseRoute] =
     Package.getPackages
       .map(_.getName)
       .flatMap(p => Try(Class.forName(s"$p.routes$$javascript").getDeclaredFields).toOption)
@@ -48,11 +48,12 @@ class ProductionNunjucksRoutesHelper @Inject() extends NunjucksRoutesHelper {
             method.invoke(instance).asInstanceOf[JavaScriptReverseRoute]
           }
       }
+      .toList
 }
 
 class DevelopmentNunjucksRoutesHelper @Inject() (environment: Environment) extends NunjucksRoutesHelper {
 
-  override def routes: Seq[JavaScriptReverseRoute] = {
+  override def routes: scala.collection.immutable.Seq[JavaScriptReverseRoute] = {
 
     val routesUrls = environment.rootPath.toScala.glob("target/*/classes").toList.filter(_.isDirectory).map(_.url)
 

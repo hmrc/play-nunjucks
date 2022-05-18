@@ -16,17 +16,19 @@
 
 package uk.gov.hmrc.nunjucks
 
+import org.scalatest.OptionValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.{FreeSpec, MustMatchers, OptionValues}
-import play.api.{Environment, Mode, PlayException}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.must.Matchers
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.mvc.RequestHeader
 import play.api.test.FakeRequest
+import play.api.{Environment, Mode, PlayException}
 import play.twirl.api.Html
 import uk.gov.hmrc.nunjucks.models.TestViewModel
 
-class NunjucksRendererSpec extends FreeSpec with MustMatchers
+class NunjucksRendererSpec extends AnyFreeSpec with Matchers
   with ScalaFutures with IntegrationPatience with OptionValues {
 
   "NunjucksRenderer" - {
