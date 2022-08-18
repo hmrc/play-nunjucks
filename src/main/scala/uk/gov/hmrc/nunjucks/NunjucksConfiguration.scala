@@ -21,5 +21,6 @@ final case class NunjucksConfiguration(
   libPaths: Seq[String],
   threadCount: Int,
   noCache: Boolean,
-  routesBatchSize: Int
+  routesBatchSize: Int,
+  optimizationLevel: Int
 )

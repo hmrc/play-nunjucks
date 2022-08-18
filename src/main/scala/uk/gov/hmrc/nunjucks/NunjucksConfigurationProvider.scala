@@ -47,12 +47,16 @@ class NunjucksConfigurationProvider @Inject() (
     val routesBatchSize =
       configuration.get[Int]("nunjucks.routesBatchSize")
 
+    val optimizationLevel =
+      configuration.get[Int]("nunjucks.optimizationLevel")
+
     NunjucksConfiguration(
       viewPaths = viewPaths,
       libPaths = libPaths,
       threadCount = threadCount,
       noCache = noCache,
-      routesBatchSize = routesBatchSize
+      routesBatchSize = routesBatchSize,
+      optimizationLevel = optimizationLevel
     )
   }
 }

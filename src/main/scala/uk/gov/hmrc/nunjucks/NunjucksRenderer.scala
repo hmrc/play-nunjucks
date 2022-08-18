@@ -99,7 +99,7 @@ class NunjucksRenderer @Inject() (
     Future {
 
       val context = Context.enter()
-
+      context.setOptimizationLevel(configuration.optimizationLevel)
       globals.foreach(context.putThreadLocal("globals", _))
       context.putThreadLocal("configuration", configuration)
       context.putThreadLocal("environment", environment)
