@@ -4,3 +4,4 @@ leakDetectionExemptions:
   - ruleId: 'play_http_secret_key'
     filePaths:
       - '/it-server/conf/application.conf'
+    text: 'abcdefghijk'
