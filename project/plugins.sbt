@@ -15,7 +15,7 @@ addSbtPlugin("org.irundaia.sbt" % "sbt-sassify" % "1.4.11")
 
 addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.6.0")
 
-addSbtPlugin("uk.gov.hmrc" % "sbt-auto-build" % "3.6.0")
+addSbtPlugin("uk.gov.hmrc" % "sbt-auto-build" % "3.8.0")
 
 addSbtPlugin("uk.gov.hmrc" % "sbt-play-cross-compilation" % "2.3.0")
 
