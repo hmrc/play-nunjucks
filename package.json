@@ -4,7 +4,7 @@
     "audit": "better-npm-audit audit"
   },
   "dependencies": {
-    "nunjucks": "^3.1.3",
+    "nunjucks": "^3.2.4",
     "better-npm-audit": "^3.7.3"
   }
 }
