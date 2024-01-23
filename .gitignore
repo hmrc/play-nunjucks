@@ -3,3 +3,7 @@ target/
 node_modules/
 .bsp/
 .DS_Store
+play-nunjucks-play-30/package.json
+play-nunjucks-play-30/package-lock.json
+play-nunjucks-play-29/package.json
+play-nunjucks-play-29/package-lock.json
