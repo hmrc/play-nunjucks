@@ -75,7 +75,7 @@ lazy val playNunjucksPlay28 = Project("play-nunjucks-play-28", file("play-nunjuc
 def copyNpmFilesTask = Def.task {
   IO.copy(
     Seq("package.json", "package-lock.json")
-      .map(file => baseDirectory.value / ".." / "play-nunjucks-play-28" / file -> baseDirectory.value / file)
+      .map(file => baseDirectory.value / ".." / "play-nunjucks-play-30" / file -> baseDirectory.value / file)
   )
 }
 
