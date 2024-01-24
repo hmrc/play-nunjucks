@@ -14,9 +14,7 @@ def copySources(module: Project) = Seq(
 )
 
 def copyPlayResources(module: Project) = Seq(
-//  Compile / TwirlKeys.compileTemplates / sourceDirectories += (module / baseDirectory).value / s"src/main/twirl",
   Compile / routes / sources ++= {
-    //baseDirectory.value / s"../src-common/main/resources/hmrcfrontend.routes"
     // compile any routes files in the root named "routes" or "*.routes"
     val dirs = (module / Compile / unmanagedResourceDirectories).value
     (dirs * "routes").get ++ (dirs * "*.routes").get
@@ -33,21 +31,21 @@ lazy val library = (project in file("."))
     }
   )
 
-lazy val playNunjucksPlay28 = Project("play-nunjucks-play-28", file("play-nunjucks-play-28"))
+lazy val playNunjucksPlay30 = Project("play-nunjucks-play-30", file("play-nunjucks-play-30"))
   .enablePlugins(SbtWeb)
   .settings(inConfig(Test)(testSettings): _*)
-  .settings(scalaVersion := scala2_12, crossScalaVersions := Seq(scala2_12, scala2_13))
+  .settings(scalaVersion := scala2_13)
   .settings(
-    libraryDependencies ++= LibDependencies.play28,
+    libraryDependencies ++= LibDependencies.play30,
     coverageExcludedPackages := "<empty>;uk.gov.hmrc.BuildInfo;uk.gov.hmrc.nunjucks.PlayModuleRegistry",
-    buildInfoKeys ++= Seq[BuildInfoKey]("playVersion" -> LibDependencies.play28Version)
+    buildInfoKeys ++= Seq[BuildInfoKey]("playVersion" -> LibDependencies.play30Version)
   )
   .settings(Compile / resourceGenerators += npmModulesTarballTask.taskValue)
 
 lazy val playNunjucksPlay29 = Project("play-nunjucks-play-29", file("play-nunjucks-play-29"))
   .enablePlugins(SbtWeb)
-  .settings(copySources(playNunjucksPlay28))
-  .settings(copyPlayResources(playNunjucksPlay28))
+  .settings(copySources(playNunjucksPlay30))
+  .settings(copyPlayResources(playNunjucksPlay30))
   .settings(inConfig(Test)(testSettings): _*)
   .settings(scalaVersion := scala2_13)
   .settings(
@@ -59,14 +57,14 @@ lazy val playNunjucksPlay29 = Project("play-nunjucks-play-29", file("play-nunjuc
       .dependsOn(copyNpmFilesTask.taskValue)
   )
 
-lazy val playNunjucksPlay30 = Project("play-nunjucks-play-30", file("play-nunjucks-play-30"))
+lazy val playNunjucksPlay28 = Project("play-nunjucks-play-28", file("play-nunjucks-play-28"))
   .enablePlugins(SbtWeb)
-  .settings(copySources(playNunjucksPlay28))
-  .settings(copyPlayResources(playNunjucksPlay28))
+  .settings(copySources(playNunjucksPlay30))
+  .settings(copyPlayResources(playNunjucksPlay30))
   .settings(inConfig(Test)(testSettings): _*)
-  .settings(scalaVersion := scala2_13)
+  .settings(scalaVersion := scala2_12, crossScalaVersions := Seq(scala2_12, scala2_13))
   .settings(
-    libraryDependencies ++= LibDependencies.play30,
+    libraryDependencies ++= LibDependencies.play28,
     coverageExcludedPackages := "<empty>;uk.gov.hmrc.BuildInfo;uk.gov.hmrc.nunjucks.PlayModuleRegistry"
   )
   .settings(
@@ -95,9 +93,27 @@ lazy val itServer = sys.env.get("PLAY_VERSION") match {
   case _           => itServerPlay30
 }
 
+lazy val itServerPlay30 = Project("it-server-play-30", file("it-server-play-30"))
+  .enablePlugins(PlayScala, SbtWeb)
+  .dependsOn(playNunjucksPlay30)
+  .settings(inConfig(Test)(testSettings): _*)
+  .settings(sharedItServerSettings: _*)
+  .settings(scalaVersion := scala2_13)
+  .settings(libraryDependencies ++= LibDependencies.itServerPlay30)
+
+lazy val itServerPlay29 = Project("it-server-play-29", file("it-server-play-29"))
+  .enablePlugins(PlayScala, SbtWeb)
+  .dependsOn(playNunjucksPlay29)
+  .settings(copySources(itServerPlay30))
+  .settings(inConfig(Test)(testSettings): _*)
+  .settings(sharedItServerSettings: _*)
+  .settings(scalaVersion := scala2_13)
+  .settings(libraryDependencies ++= LibDependencies.itServerPlay29)
+
 lazy val itServerPlay28 = Project("it-server-play-28", file("it-server-play-28"))
   .enablePlugins(PlayScala, SbtWeb)
   .dependsOn(playNunjucksPlay28)
+  .settings(copySources(itServerPlay30))
   .settings(inConfig(Test)(testSettings): _*)
   .settings(sharedItServerSettings: _*)
   .settings(
@@ -105,24 +121,6 @@ lazy val itServerPlay28 = Project("it-server-play-28", file("it-server-play-28")
     crossScalaVersions := Seq(scala2_12, scala2_13)
   )
   .settings(libraryDependencies ++= LibDependencies.itServerPlay28)
-
-lazy val itServerPlay29 = Project("it-server-play-29", file("it-server-play-29"))
-  .enablePlugins(PlayScala, SbtWeb)
-  .dependsOn(playNunjucksPlay29)
-  .settings(copySources(itServerPlay28))
-  .settings(inConfig(Test)(testSettings): _*)
-  .settings(sharedItServerSettings: _*)
-  .settings(scalaVersion := scala2_13)
-  .settings(libraryDependencies ++= LibDependencies.itServerPlay29)
-
-lazy val itServerPlay30 = Project("it-server-play-30", file("it-server-play-30"))
-  .enablePlugins(PlayScala, SbtWeb)
-  .dependsOn(playNunjucksPlay30)
-  .settings(copySources(itServerPlay28))
-  .settings(inConfig(Test)(testSettings): _*)
-  .settings(sharedItServerSettings: _*)
-  .settings(scalaVersion := scala2_13)
-  .settings(libraryDependencies ++= LibDependencies.itServerPlay30)
 
 lazy val sharedItServerSettings = Seq(
   Concat.groups := Seq(
