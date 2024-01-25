@@ -13,14 +13,6 @@ def copySources(module: Project) = Seq(
   Test / resourceDirectory := (module / Test / resourceDirectory).value
 )
 
-def copyPlayResources(module: Project) = Seq(
-  Compile / routes / sources ++= {
-    // compile any routes files in the root named "routes" or "*.routes"
-    val dirs = (module / Compile / unmanagedResourceDirectories).value
-    (dirs * "routes").get ++ (dirs * "*.routes").get
-  }
-)
-
 lazy val library = (project in file("."))
   .settings(publish / skip := true)
   .aggregate(
@@ -45,7 +37,6 @@ lazy val playNunjucksPlay30 = Project("play-nunjucks-play-30", file("play-nunjuc
 lazy val playNunjucksPlay29 = Project("play-nunjucks-play-29", file("play-nunjucks-play-29"))
   .enablePlugins(SbtWeb)
   .settings(copySources(playNunjucksPlay30))
-  .settings(copyPlayResources(playNunjucksPlay30))
   .settings(inConfig(Test)(testSettings): _*)
   .settings(scalaVersion := scala2_13)
   .settings(
@@ -60,7 +51,6 @@ lazy val playNunjucksPlay29 = Project("play-nunjucks-play-29", file("play-nunjuc
 lazy val playNunjucksPlay28 = Project("play-nunjucks-play-28", file("play-nunjucks-play-28"))
   .enablePlugins(SbtWeb)
   .settings(copySources(playNunjucksPlay30))
-  .settings(copyPlayResources(playNunjucksPlay30))
   .settings(inConfig(Test)(testSettings): _*)
   .settings(scalaVersion := scala2_12, crossScalaVersions := Seq(scala2_12, scala2_13))
   .settings(
