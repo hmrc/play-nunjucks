@@ -3,6 +3,8 @@
 This is a library which enables the use of [Nunjucks](https://mozilla.github.io/uk.gov.hmrc.nunjucks/)
 templates in a [Play!](https://www.playframework.com/) web application.
 
+### Please note, v1.0.0 onwards of play-nunjucks has NOT been performance tested. Before deploying to production after migrating to v1.0.0 or higher, please ensure your service has been adequately performance tested.
+
 ## Installation
 
 sbt
