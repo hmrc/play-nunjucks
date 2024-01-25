@@ -3,11 +3,13 @@
 This is a library which enables the use of [Nunjucks](https://mozilla.github.io/uk.gov.hmrc.nunjucks/)
 templates in a [Play!](https://www.playframework.com/) web application.
 
+### Please note, v1.0.0 onwards of play-nunjucks has NOT been performance tested. Before deploying to production after migrating to v1.0.0 or higher, please ensure your service has been adequately performance tested.
+
 ## Installation
 
 sbt
 ```scala
-libraryDependencies += "uk.gov.hmrc" %% "play-nunjucks" % "x.y.z-play-27"
+libraryDependencies += "uk.gov.hmrc" %% "play-nunjucks-play-30" % "x.y.z"
 ```
 
 ## Usage
@@ -16,9 +18,9 @@ libraryDependencies += "uk.gov.hmrc" %% "play-nunjucks" % "x.y.z-play-27"
 to use both this library and [govuk-frontend](https://github.com/alphagov/govuk-frontend)
 in the `it-server` folder.
 
-Unlike standard Twirl based views in Play! Nunjucks views are
+Unlike standard Twirl based views in Play, Nunjucks views are
 not compiled to Scala code, instead they are 
-added as project resources in the `conf` directory of a Play!
+added as project resources in the `conf` directory of a Play
 application.
 
 ### Basic usage
@@ -103,7 +105,7 @@ renderer.render(
 
 ### Built in helpers
 
-There are some features of Play! that are really useful to be
+There are some features of Play that are really useful to be
 able to access in views so we've added some helper methods 
 that are available to all nuk.gov.hmrc.nunjuckstemplates.
 
@@ -241,7 +243,7 @@ relevant field `exception` and the stack trace therewithin.
 An it-server project has been included as a reference, providing an example page.
 You can see this in action by running the following command:
 ```sbt
-PLAY_VERSION=2.7 sbt "project itServer" run
+PLAY_VERSION=3.0 sbt "project it-server-play-30" run
 ```
 
 ## Issue with high numbers of routes causing `ArrayIndexOutOfBoundsException`
