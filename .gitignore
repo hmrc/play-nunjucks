@@ -7,3 +7,8 @@ play-nunjucks-play-28/package.json
 play-nunjucks-play-28/package-lock.json
 play-nunjucks-play-29/package.json
 play-nunjucks-play-29/package-lock.json
+.metals/
+.vscode/
+.bloop/
+project/metals.sbt
+project/project/
