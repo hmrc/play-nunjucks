@@ -15,8 +15,8 @@ libraryDependencies += "uk.gov.hmrc" %% "play-nunjucks-play-30" % "x.y.z"
 ## Usage
 
 > This repository contains a reference implementation of how
-to use both this library and [govuk-frontend](https://github.com/alphagov/govuk-frontend)
-in the `it-server` folder.
+> to use both this library and [govuk-frontend](https://github.com/alphagov/govuk-frontend)
+> in the `it-server` folder.
 
 Unlike standard Twirl based views in Play, Nunjucks views are
 not compiled to Scala code, instead they are 
@@ -35,7 +35,7 @@ def render[A : OWrites](view: String, context: A)(implicit request: RequestHeade
 ```
 
 > There are also overridden versions of this method to render
-a view with no context object, or a Play! JSON object.
+> a view with no context object, or a Play! JSON object.
 
 A simple controller method would look something like:
 
@@ -150,7 +150,7 @@ token as a value. For example:
 ```
 
 > Notice that we have to use the `safe` filter in Nunjucks as this
-helper actually outputs HTML
+> helper actually outputs HTML
 
 ##### Request helper
 Play has a `RequestHeader` that is provided to all controllers which contains information
@@ -242,8 +242,8 @@ relevant field `exception` and the stack trace therewithin.
 ## Example server
 An it-server project has been included as a reference, providing an example page.
 You can see this in action by running the following command:
-```sbt
-PLAY_VERSION=3.0 sbt "project it-server-play-30" run
+```shell
+sbt "project it-server-play-30" run
 ```
 
 ## Issue with high numbers of routes causing `ArrayIndexOutOfBoundsException`
@@ -289,6 +289,19 @@ considering whether it's possible to reduce the number of routes via consolidati
 split the frontend microservice into multiple microservices.
 
 ## Node Version
-The Node version is set in nvmrc at `8.12.0`. This is an old version of Node, however upgrading the version of Node isn't a trivial process, as we build this project in Play 2.8, 2.9 and 3.0. Bumping this package is fine for 2.9 and 3.0, but upgrading this in 2.8 isn't as straight-forward due to a dependency of Play, [sbt-js-engine](https://github.com/playframework/playframework/blob/2.8.x/project/Dependencies.scala#L222) which is [bumped in 2.9](https://github.com/playframework/playframework/blob/2.9.x/project/Dependencies.scala#L247) and [3.0](https://github.com/playframework/playframework/blob/3.0.x/project/Dependencies.scala#L225). By default, this runs `npm update` rather than `npm ci`, causing errors on build for 2.8.
 
-Given this, we're deferring the upgrade of the Node version until such a time we can drop support for Play 2.8. This repo uses npm to just pull the relevant packages, so there is no major risk in leaving this on an older version of node.
+The Node version set in the .nvmrc file is used to download nunjucks when this library is built.
+
+It's not used at runtime in services to render templates.
+
+## How to run the tests, for maintainers
+
+1. We need to be using the right version of nodejs, see the section above for more info, if you have NVM installed:
+    ```shell
+    nvm install
+    ```
+2. All the tests are in the itServer sub project, run them across all cross-compiled scala versions with:
+    ```shell
+    env NODE_ENV=production sbt clean +test
+    ```
+   NODE_ENV set to production causes the npm install via the npm ci command to omit dev dependencies
