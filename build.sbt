@@ -30,7 +30,8 @@ lazy val playNunjucksPlay30 = Project("play-nunjucks-play-30", file("play-nunjuc
   .settings(
     libraryDependencies ++= LibDependencies.play30,
     coverageExcludedPackages := "<empty>;uk.gov.hmrc.BuildInfo;uk.gov.hmrc.nunjucks.PlayModuleRegistry",
-    buildInfoKeys ++= Seq[BuildInfoKey]("playVersion" -> LibDependencies.play30Version)
+    buildInfoKeys ++= Seq[BuildInfoKey]("playVersion" -> LibDependencies.play30Version),
+    JsEngineKeys.npmSubcommand := JsEngineKeys.NpmSubcommand.Ci
   )
   .settings(Compile / resourceGenerators += npmModulesTarballTask.taskValue)
 
@@ -41,7 +42,8 @@ lazy val playNunjucksPlay29 = Project("play-nunjucks-play-29", file("play-nunjuc
   .settings(scalaVersion := scala2_13)
   .settings(
     libraryDependencies ++= LibDependencies.play29,
-    coverageExcludedPackages := "<empty>;uk.gov.hmrc.BuildInfo;uk.gov.hmrc.nunjucks.PlayModuleRegistry"
+    coverageExcludedPackages := "<empty>;uk.gov.hmrc.BuildInfo;uk.gov.hmrc.nunjucks.PlayModuleRegistry",
+    JsEngineKeys.npmSubcommand := JsEngineKeys.NpmSubcommand.Ci
   )
   .settings(
     Compile / resourceGenerators += npmModulesTarballTask.taskValue
@@ -55,7 +57,8 @@ lazy val playNunjucksPlay28 = Project("play-nunjucks-play-28", file("play-nunjuc
   .settings(scalaVersion := scala2_12, crossScalaVersions := Seq(scala2_12, scala2_13))
   .settings(
     libraryDependencies ++= LibDependencies.play28,
-    coverageExcludedPackages := "<empty>;uk.gov.hmrc.BuildInfo;uk.gov.hmrc.nunjucks.PlayModuleRegistry"
+    coverageExcludedPackages := "<empty>;uk.gov.hmrc.BuildInfo;uk.gov.hmrc.nunjucks.PlayModuleRegistry",
+    JsEngineKeys.npmSubcommand := JsEngineKeys.NpmSubcommand.Ci
   )
   .settings(
     Compile / resourceGenerators += npmModulesTarballTask.taskValue
@@ -73,7 +76,7 @@ def npmModulesTarballTask = Def.task {
   val nodeModules = (Assets / JsEngineKeys.npmNodeModules).value
   val filesToZip  = nodeModules pair relativeTo(baseDirectory.value)
   val zipFile     = (Compile / resourceManaged).value / "nodeModules.tar"
-  IO.zip(filesToZip, zipFile, None)
+  IO.zip(filesToZip, zipFile)
   Seq(zipFile)
 }
 
