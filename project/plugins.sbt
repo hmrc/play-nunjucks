@@ -23,6 +23,6 @@ addSbtPlugin("net.ground5hark.sbt" % "sbt-concat" % "0.2.0")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-uglify" % "2.0.0")
 
-addSbtPlugin("uk.gov.hmrc" % "sbt-auto-build" % "3.20.0")
+addSbtPlugin("uk.gov.hmrc" % "sbt-auto-build" % "3.21.0")
 
 addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.4.0")
