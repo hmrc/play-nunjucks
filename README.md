@@ -287,3 +287,8 @@ service and there may be further edge cases that this solution does not cover.
 If your service has a high number of routes and experiences this or a related issue, it's worth
 considering whether it's possible to reduce the number of routes via consolidation or potentially
 split the frontend microservice into multiple microservices.
+
+## Node Version
+The Node version is set in nvmrc at `8.12.0`. This is an old version of Node, however upgrading the version of Node isn't a trivial process, as we build this project in Play 2.8, 2.9 and 3.0. Bumping this package is fine for 2.9 and 3.0, but upgrading this in 2.8 isn't as straight-forward due to a dependency of Play, [sbt-js-engine](https://github.com/playframework/playframework/blob/2.8.x/project/Dependencies.scala#L222) which is [bumped in 2.9](https://github.com/playframework/playframework/blob/2.9.x/project/Dependencies.scala#L247) and [3.0](https://github.com/playframework/playframework/blob/3.0.x/project/Dependencies.scala#L225). By default, this runs `npm update` rather than `npm ci`, causing errors on build for 2.8.
+
+Given this, we're deferring the upgrade of the Node version until such a time we can drop support for Play 2.8. This repo uses npm to just pull the relevant packages, so there is no major risk in leaving this on an older version of node.

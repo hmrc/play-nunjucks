@@ -3,6 +3,11 @@ target/
 node_modules/
 .bsp/
 .DS_Store
+.metals/
+.vscode/
+project/.bloop/
+project/metals.sbt
+project/project/
 play-nunjucks-play-28/package.json
 play-nunjucks-play-28/package-lock.json
 play-nunjucks-play-29/package.json
