@@ -6,7 +6,7 @@ ThisBuild / majorVersion := 1
 ThisBuild / isPublicArtefact := true
 ThisBuild / scalaVersion := scala2_13
 
-lazy val playNunjucksPlay30 = Project("play-nunjucks-play-30", file("play-nunjucks-play-30"))
+lazy val playNunjucksPlay30 = Project("play-nunjucks-play-30", file("play-nunjucks"))
   .enablePlugins(SbtWeb)
   .settings(
     libraryDependencies ++= LibDependencies.play30,
@@ -26,7 +26,7 @@ def npmModulesTarballTask = Def.task {
   Seq(zipFile)
 }
 
-lazy val itServerPlay30 = Project("it-server-play-30", file("it-server-play-30"))
+lazy val itServerPlay30 = Project("it-server-play-30", file("it-server"))
   .enablePlugins(PlayScala, SbtWeb)
   .dependsOn(playNunjucksPlay30)
   .settings(
