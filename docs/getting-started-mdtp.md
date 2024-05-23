@@ -3,7 +3,7 @@
 These notes are written assuming you are building a typical MDTP frontend microservice - i.e. assuming that you use the 
 standard platform conventions for things like route prefixes, sbt plugins etc.
 
-Note that the [viewmodel library](https://github.com/hmrc/play-nunjucks-viewmodel) includes an `it-server` 
+Note that the [viewmodel library](https://github.com/hmrc/play-nunjucks-viewmodel) includes an `it-server-play-30` 
 project which gives examples of using nunjucks and the viewmodels, which is a useful reference.
 
 #### Include the nunjucks library and viewmodels library
@@ -14,9 +14,8 @@ https://github.com/hmrc/play-nunjucks-viewmodel
 Add this to your AppDependencies / build.sbt
 
 ```sbt
-// replace with play-26 if using on a Play 2.6 microservice
-libraryDependencies += "uk.gov.hmrc" %% "play-nunjucks" % "x.y.z-play-27"
-libraryDependencies += "uk.gov.hmrc" %% "play-nunjucks-viewmodel" % "x.y.z"
+libraryDependencies += "uk.gov.hmrc" %% "play-nunjucks-play-30" % "x.y.z"
+libraryDependencies += "uk.gov.hmrc" %% "play-nunjucks-viewmodel-play-30" % "x.y.z"
 ```
 
 #### Include the `govuk-frontend` library
@@ -24,7 +23,7 @@ libraryDependencies += "uk.gov.hmrc" %% "play-nunjucks-viewmodel" % "x.y.z"
 Add this to your AppDependencies / build.sbt
 
 ```sbt
-libraryDependencies += "org.webjars.npm" % "govuk-frontend" % "3.3.0"
+libraryDependencies += "org.webjars.npm" % "govuk-frontend" % "x.y.z"
 ```
 
 #### Configure the paths to views and libraries
