@@ -2,14 +2,14 @@ import sbt._
 
 object LibDependencies {
 
-  val play30Version = "3.0.0"
+  val play30Version = "3.0.3"
 
   private val shared = Seq(
     "com.github.pathikrit" %% "better-files"         % "3.9.1",
     "io.apigee.trireme"     % "trireme-core"         % "0.9.4",
     "io.apigee.trireme"     % "trireme-kernel"       % "0.9.4",
     "io.apigee.trireme"     % "trireme-node12src"    % "0.9.4",
-    "org.webjars"           % "webjars-locator-core" % "0.35"
+    "org.webjars"           % "webjars-locator-core" % "0.58"
   )
 
   val play30 = Seq(
