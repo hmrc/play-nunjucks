@@ -25,14 +25,14 @@ object LibDependencies {
   ) ++ shared
 
   private val itServerShared = Seq(
-    "org.webjars.npm" % "govuk-frontend" % "3.3.0",
+    "org.webjars.npm" % "govuk-frontend" % "4.8.0",
     "org.scalacheck" %% "scalacheck"     % "1.14.0" % "test",
     "org.scalactic"  %% "scalactic"      % "3.2.3"  % "test",
     "org.scalatest"  %% "scalatest"      % "3.2.3"  % "test"
   )
 
   val itServerPlay30 = Seq(
-    "org.playframework"      %% "play-guice"         % "3.0.0",
+    "org.playframework"      %% "play-guice"         % "3.0.3",
     "com.vladsch.flexmark"    % "flexmark-all"       % "0.64.8" % "test",
     "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.0"  % "test"
   ) ++ itServerShared

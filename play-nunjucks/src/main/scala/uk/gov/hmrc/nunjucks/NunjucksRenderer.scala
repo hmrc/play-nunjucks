@@ -208,7 +208,7 @@ class NunjucksSetup @Inject() (
     Files.copy(environment.resourceAsStream("uk/gov/hmrc/nunjucks/nunjucks-bootstrap.js").get, scriptFile.path)
 
     val libDir    = tmpDir / "lib"
-    val extractor = new WebJarExtractor(environment.classLoader)
+    val extractor = new WebJarExtractor()
     extractor.extractAllWebJarsTo(libDir.toJava)
 
     (nodeModulesDir, tmpDir, scriptFile, libDir)
