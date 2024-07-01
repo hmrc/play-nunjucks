@@ -305,3 +305,15 @@ It's not used at runtime in services to render templates.
     env NODE_ENV=production sbt clean +test
     ```
    NODE_ENV set to production causes the npm install via the npm ci command to omit dev dependencies
+
+## Security
+
+We used to use a library called better-npm-audit to run security checks of our dependencies for published vulnerabilities.
+
+It stopped working for this repo because we moved the dependency manifests (package.json and package-lock.json) into the play-nunjucks subfolder, and the tooling we were using to run the tests couldn't run npm in a subfolder.
+
+The main reason for using better-npm-audit was that we could suppress known issues that we couldn't fix (normally where it would require updating/patching a transitive dependency that could break the direct dependency in a way that was hard to check, and where our usage didn't seem to be impacted by the vulnerability.)
+
+We've never had any reported dependency issues for this library, because it only has one dependency (nunjucks).
+
+So rather than try improve the tooling we were using to be able to work with subfolders, we opted to switch to using dependabot. This has the added benefit for us that it's easier for others outside our team to contribute to the maintenance of the library in the future.
