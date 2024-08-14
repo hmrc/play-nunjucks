@@ -2,7 +2,7 @@ import sbt._
 
 object LibDependencies {
 
-  val play30Version = "3.0.3"
+  val play30Version = "3.0.5"
 
   private val shared = Seq(
     "com.github.pathikrit" %% "better-files"         % "3.9.1",
