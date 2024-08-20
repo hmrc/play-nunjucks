@@ -152,6 +152,15 @@ token as a value. For example:
 > Notice that we have to use the `safe` filter in Nunjucks as this
 > helper actually outputs HTML
 
+##### Autoescaping Special Characters
+
+Some characters such as an ampersand (&) are considered special characters. If you have some variable that passes a special character like this `&`, by default play-nunjucks will auto-escape this, displaying an ampersand correctly. If you pass `&amp;` however, you will need to ensure you use the `safe` filter, which will then display `&amp;` as an ampersand.
+
+```
+{{ "&amp;" | safe}} - Displays &
+{{ "&amp;" }} - Displays &amp;
+```
+
 ##### Request helper
 Play has a `RequestHeader` that is provided to all controllers which contains information
 about the current request. Some of this can be extremely useful in views. The following
