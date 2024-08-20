@@ -152,7 +152,7 @@ token as a value. For example:
 > Notice that we have to use the `safe` filter in Nunjucks as this
 > helper actually outputs HTML
 
-##### Autoescaping Special Characters
+##### Autoescaping special characters
 
 Some characters such as an ampersand (&) are considered special characters. If you have some 
 variable that passes a special character like this `&`, by default play-nunjucks will auto-escape this, 
