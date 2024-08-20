@@ -154,7 +154,10 @@ token as a value. For example:
 
 ##### Autoescaping Special Characters
 
-Some characters such as an ampersand (&) are considered special characters. If you have some variable that passes a special character like this `&`, by default play-nunjucks will auto-escape this, displaying an ampersand correctly. If you pass `&amp;` however, you will need to ensure you use the `safe` filter, which will then display `&amp;` as an ampersand.
+Some characters such as an ampersand (&) are considered special characters. If you have some 
+variable that passes a special character like this `&`, by default play-nunjucks will auto-escape this, 
+displaying an ampersand correctly. If you pass `&amp;` however, you will need to ensure you use the 
+`safe` filter, which will then display `&amp;` as an ampersand.
 
 ```
 {{ "&amp;" | safe}} - Displays &
