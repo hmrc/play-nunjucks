@@ -13,6 +13,6 @@ addSbtPlugin("com.github.sbt" % "sbt-concat" % "1.0.0")
 
 addSbtPlugin("com.github.sbt" % "sbt-uglify" % "3.0.0")
 
-addSbtPlugin("uk.gov.hmrc" % "sbt-auto-build" % "3.22.0")
+addSbtPlugin("uk.gov.hmrc" % "sbt-auto-build" % "3.24.0")
 
 addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.4.0")

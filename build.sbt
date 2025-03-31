@@ -1,6 +1,6 @@
 import sbt.Path.relativeTo
 
-val scala2_13 = "2.13.12"
+val scala2_13 = "2.13.16"
 
 ThisBuild / majorVersion := 1
 ThisBuild / isPublicArtefact := true
